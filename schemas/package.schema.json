@@ -1,0 +1,17 @@
+id: this-project
+version: 0.1.0
+question: このプロジェクトは成立するか
+
+simulation:
+  runs: 2000
+  seed: 42
+
+variables:
+  execution_rate:
+    distribution: uniform
+    min: 0.01
+    max: 0.05
+
+package:
+  taxonomy: packages/business_plan/taxonomy.yaml
+  evaluator: packages/business_plan/evaluator.yaml
