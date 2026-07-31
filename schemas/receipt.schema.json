@@ -1,0 +1,27 @@
+{
+  "receipt_id": "sim-this-project-001",
+  "package_id": "business_plan",
+  "simulation": {
+    "requested_runs": 2000,
+    "completed_runs": 2000,
+    "seed": 42,
+    "evidence_level": "synthetic_simulation"
+  },
+  "distribution": {
+    "viable": {
+      "count": 364,
+      "ratio": 0.182
+    },
+    "viable_if_narrowed": {
+      "count": 722,
+      "ratio": 0.361
+    }
+  },
+  "holds": [],
+  "provenance": {
+    "runner_version": "0.1.0",
+    "input_digest": "sha256:...",
+    "taxonomy_digest": "sha256:...",
+    "evaluator_digest": "sha256:..."
+  }
+}
