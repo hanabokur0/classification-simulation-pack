@@ -1,17 +1,28 @@
-id: this-project
-version: 0.1.0
-question: このプロジェクトは成立するか
+project:
+  name: Classification Simulation Pack
+  description: >
+    事業や企画を何度も試し、
+    成功条件と失敗理由をReceiptとして返すGitHubツール。
+  target_users:
+    - 新規事業を考えている人
+    - 企画を比較したい人
+    - 投資や導入を判断する人
 
-simulation:
-  runs: 2000
-  seed: 42
+success_definition:
+  useful:
+    classes:
+      - useful_free_tool
+      - small_paid_product
+      - repeatable_business
+      - platform_signal
 
-variables:
-  execution_rate:
-    distribution: uniform
-    min: 0.01
-    max: 0.05
+  paid:
+    classes:
+      - small_paid_product
+      - repeatable_business
+      - platform_signal
 
-package:
-  taxonomy: packages/business_plan/taxonomy.yaml
-  evaluator: packages/business_plan/evaluator.yaml
+  business:
+    classes:
+      - repeatable_business
+      - platform_signal
