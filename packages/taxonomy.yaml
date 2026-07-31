@@ -1,0 +1,49 @@
+id: business_plan_taxonomy
+version: 0.1.0
+package_id: business_plan
+
+classes:
+  - id: viable
+    label: Viable
+    description: >
+      Declared assumptionsの範囲で、収益性・提供能力・継続性の
+      最低条件を満たしている。
+    severity: positive
+    terminal: true
+
+  - id: viable_if_narrowed
+    label: Viable if narrowed
+    description: >
+      顧客層、提供範囲、機能、固定費などを絞れば成立可能。
+    severity: conditional
+    terminal: true
+
+  - id: sales_bottleneck
+    label: Sales bottleneck
+    description: >
+      提供能力よりも、顧客獲得数や成約率が主要な制約になっている。
+    severity: warning
+    terminal: true
+
+  - id: delivery_bottleneck
+    label: Delivery bottleneck
+    description: >
+      需要は存在するが、工数、人員、設備、処理容量が主要な制約になっている。
+    severity: warning
+    terminal: true
+
+  - id: cashflow_failure
+    label: Cash-flow failure
+    description: >
+      収益化までの期間または月次収支に対して、運転資金が不足する。
+    severity: failure
+    terminal: true
+
+  - id: insufficient_context
+    label: Insufficient context
+    description: >
+      分類に必要な前提または観測値が不足している。
+    severity: hold
+    terminal: false
+
+fallback_class: insufficient_context
