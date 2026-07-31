@@ -1,0 +1,15 @@
+{
+  "scenario_id": "this-project-run-000042",
+  "run_index": 42,
+  "sampled_values": {
+    "execution_rate": 0.034,
+    "annual_effective_visitors": 1240
+  },
+  "derived_values": {
+    "external_executions": 42
+  },
+  "classification": {
+    "class_id": "viable_if_narrowed",
+    "rule_id": "viable-if-narrowed"
+  }
+}
