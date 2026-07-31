@@ -1,0 +1,42 @@
+id: this-project
+
+question: >
+  Can Classification Simulation Pack become a useful open-source project
+  and produce a credible path toward paid extensions?
+
+simulation:
+  runs: 2000
+  seed: 42
+
+variables:
+  annual_effective_visitors:
+    distribution: lognormal
+    median: 900
+    sigma: 0.8
+
+  execution_rate:
+    distribution: uniform
+    min: 0.01
+    max: 0.05
+
+  external_receipt_rate:
+    distribution: uniform
+    min: 0.00
+    max: 0.30
+
+  paid_conversion_rate:
+    distribution: uniform
+    min: 0.00
+    max: 0.08
+
+  average_paid_value:
+    values:
+      - 0
+      - 50000
+      - 150000
+      - 300000
+
+package:
+  id: business_plan
+  taxonomy: packages/business_plan/taxonomy.yaml
+  evaluator: packages/business_plan/evaluator.yaml
