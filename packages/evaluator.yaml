@@ -1,0 +1,108 @@
+id: business_plan_evaluator
+version: 0.1.0
+package_id: business_plan
+taxonomy_ref: taxonomy.yaml
+
+required_inputs:
+  - monthly_customers
+  - monthly_price
+  - acquisition_cost_per_customer
+  - delivery_cost_per_customer
+  - monthly_fixed_cost
+  - available_monthly_capacity
+  - initial_cash
+
+derived_metrics:
+  monthly_revenue:
+    expression: monthly_customers * monthly_price
+
+  monthly_acquisition_cost:
+    expression: monthly_customers * acquisition_cost_per_customer
+
+  monthly_delivery_cost:
+    expression: monthly_customers * delivery_cost_per_customer
+
+  monthly_total_cost:
+    expression: >
+      monthly_fixed_cost
+      + monthly_acquisition_cost
+      + monthly_delivery_cost
+
+  monthly_profit:
+    expression: monthly_revenue - monthly_total_cost
+
+  delivery_load_ratio:
+    expression: monthly_customers / available_monthly_capacity
+
+  runway_months:
+    expression: >
+      if(monthly_profit >= 0, null, initial_cash / abs(monthly_profit))
+
+rules:
+  - id: missing-required-input
+    priority: 1000
+    when:
+      any_missing:
+        - monthly_customers
+        - monthly_price
+        - acquisition_cost_per_customer
+        - delivery_cost_per_customer
+        - monthly_fixed_cost
+        - available_monthly_capacity
+        - initial_cash
+    classify_as: insufficient_context
+    hold:
+      code: MISSING_REQUIRED_INPUT
+
+  - id: cashflow-failure
+    priority: 900
+    when:
+      all:
+        monthly_profit:
+          lt: 0
+        runway_months:
+          lt: 6
+    classify_as: cashflow_failure
+
+  - id: delivery-bottleneck
+    priority: 800
+    when:
+      delivery_load_ratio:
+        gt: 1.0
+    classify_as: delivery_bottleneck
+
+  - id: sales-bottleneck
+    priority: 700
+    when:
+      all:
+        monthly_customers:
+          lt: 10
+        delivery_load_ratio:
+          lte: 0.5
+    classify_as: sales_bottleneck
+
+  - id: viable
+    priority: 600
+    when:
+      all:
+        monthly_profit:
+          gte: 0
+        delivery_load_ratio:
+          lte: 0.8
+    classify_as: viable
+
+  - id: viable-if-narrowed
+    priority: 100
+    when:
+      default: true
+    classify_as: viable_if_narrowed
+
+resolution:
+  strategy: first_match
+  order: priority_descending
+
+on_evaluation_error:
+  status: held
+  classify_as: insufficient_context
+  hold:
+    code: EVALUATION_ERROR
