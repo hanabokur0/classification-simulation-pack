@@ -1,0 +1,32 @@
+# v0.5.0 Contract Set
+
+v0.5.0 fixes four transport contracts.
+
+## 1. Evidence Pack
+
+Stores facts, reports, public information, inferences, and assumptions separately. Every item carries freshness, confidence, provenance, value, and unit.
+
+## 2. Simulation Package
+
+Contains the question, declared condition space, variable provenance, Package selector, and optional domain layer. Natural language is not executed directly.
+
+## 3. Workload Manifest
+
+Describes how the Package may be transported: minimum/target/maximum runs, CPU/GPU preference, memory, interruptibility, checkpointing, resumption, divisibility, and expansion limits.
+
+## 4. Simulation Receipt
+
+Returns outcomes plus data-quality, calibration, unresolved variables, workload use, reusable structures, and provenance.
+
+## Calibration rule
+
+Evidence does not add points directly. Numeric evidence can calibrate a variable using `observed_range`, `mean_std`, or `empirical`. If evidence is insufficient, the declared range remains visible and the missing policy determines whether the Package is held or explored with a warning.
+
+```text
+more verified evidence
+→ narrower or empirical condition distribution
+→ fewer unsupported worlds
+→ higher decision readiness
+```
+
+This is improved calibration, not guaranteed real-world predictive accuracy.
