@@ -1,0 +1,154 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location("csp_runner", ROOT / "runner" / "run.py")
+assert SPEC and SPEC.loader
+RUNNER = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(RUNNER)
+
+
+class RunnerTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.input_data = RUNNER.load(ROOT / "examples" / "this_project.yaml")
+        cls.taxonomy = RUNNER.load(ROOT / "packages" / "business_plan" / "taxonomy.yaml")
+        cls.evaluator = RUNNER.load(ROOT / "packages" / "business_plan" / "evaluator.yaml")
+
+    def test_example_validates(self) -> None:
+        RUNNER.validate(self.input_data, ROOT / "schemas" / "package.schema.json", "Input")
+
+    def test_seed_is_reproducible(self) -> None:
+        first = RUNNER.run(self.input_data, self.taxonomy, self.evaluator, 200, 42)
+        second = RUNNER.run(self.input_data, self.taxonomy, self.evaluator, 200, 42)
+        self.assertEqual(first, second)
+
+    def test_human_receipt_is_generated(self) -> None:
+        scenarios = RUNNER.run(self.input_data, self.taxonomy, self.evaluator, 200, 42)
+        output = RUNNER.receipt(
+            self.input_data,
+            self.taxonomy,
+            self.evaluator,
+            scenarios,
+            200,
+            42,
+        )
+        RUNNER.validate(output, ROOT / "schemas" / "receipt.schema.json", "Receipt")
+        self.assertIn("answer", output)
+        self.assertIn("main_risk", output)
+        self.assertIn("next_action", output)
+        self.assertGreaterEqual(len(output["plain_summary"]), 3)
+        self.assertEqual(output["next_action"]["stage_id"], "useful")
+
+    def test_safety_net_is_generated(self) -> None:
+        scenarios = RUNNER.run(self.input_data, self.taxonomy, self.evaluator, 200, 42)
+        output = RUNNER.receipt(
+            self.input_data,
+            self.taxonomy,
+            self.evaluator,
+            scenarios,
+            200,
+            42,
+        )
+        safety_net = output["safety_net"]
+        self.assertTrue(safety_net["enabled"])
+        self.assertTrue(safety_net["total_loss_avoided"])
+        self.assertGreater(len(safety_net["reusable_patterns"]), 0)
+        self.assertLessEqual(len(safety_net["next_package_candidates"]), 3)
+        self.assertEqual(
+            safety_net["civilizational_yield_proxy"]["marginal_yield_status"],
+            "not_computed",
+        )
+
+    def test_sample_receipt_matches_schema(self) -> None:
+        with (ROOT / "receipts" / "this_project.sample.json").open(encoding="utf-8") as fh:
+            sample = json.load(fh)
+        RUNNER.validate(sample, ROOT / "schemas" / "receipt.schema.json", "Sample Receipt")
+
+
+class EvidenceCalibrationTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.rich = RUNNER.load(ROOT / "examples" / "data_entry_automation.yaml")
+        cls.sparse = RUNNER.load(ROOT / "examples" / "data_entry_automation_sparse.yaml")
+        cls.taxonomy = RUNNER.load(ROOT / "packages" / "automation_workflow" / "taxonomy.yaml")
+        cls.evaluator = RUNNER.load(ROOT / "packages" / "automation_workflow" / "evaluator.yaml")
+
+    def test_four_contracts_validate(self) -> None:
+        RUNNER.validate(self.rich["evidence_pack"], ROOT / "schemas" / "evidence-pack.schema.json", "Evidence Pack")
+        RUNNER.validate(self.rich, ROOT / "schemas" / "simulation-package.schema.json", "Simulation Package")
+        RUNNER.validate(self.rich["workload"], ROOT / "schemas" / "workload-manifest.schema.json", "Workload Manifest")
+
+    def test_evidence_narrows_effective_range(self) -> None:
+        effective, report = RUNNER.prepare_variables(self.rich)
+        declared = self.rich["variables"]["incoming_volume"]
+        calibrated = effective["incoming_volume"]
+        self.assertEqual(report["variables"]["incoming_volume"]["status"], "applied")
+        self.assertLess(calibrated["max"] - calibrated["min"], declared["max"] - declared["min"])
+
+    def test_sparse_package_keeps_declared_range(self) -> None:
+        effective, report = RUNNER.prepare_variables(self.sparse)
+        declared = self.sparse["variables"]["incoming_volume"]
+        calibrated = effective["incoming_volume"]
+        self.assertEqual(report["variables"]["incoming_volume"]["status"], "insufficient")
+        self.assertEqual(calibrated["min"], declared["min"] )
+        self.assertEqual(calibrated["max"], declared["max"] )
+
+    def test_richer_evidence_increases_quality_proxy(self) -> None:
+        rich_scenarios = RUNNER.run(self.rich, self.taxonomy, self.evaluator, 300, 42)
+        sparse_scenarios = RUNNER.run(self.sparse, self.taxonomy, self.evaluator, 300, 42)
+        rich_receipt = RUNNER.receipt(self.rich, self.taxonomy, self.evaluator, rich_scenarios, 300, 42)
+        sparse_receipt = RUNNER.receipt(self.sparse, self.taxonomy, self.evaluator, sparse_scenarios, 300, 42)
+        self.assertGreater(rich_receipt["data_quality"]["model_confidence"], sparse_receipt["data_quality"]["model_confidence"])
+        self.assertGreater(rich_receipt["data_quality"]["mean_range_reduction"], sparse_receipt["data_quality"]["mean_range_reduction"])
+
+
+class AutomationWorkflowTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.input_data = RUNNER.load(ROOT / "examples" / "data_entry_automation.yaml")
+        cls.taxonomy = RUNNER.load(ROOT / "packages" / "automation_workflow" / "taxonomy.yaml")
+        cls.evaluator = RUNNER.load(ROOT / "packages" / "automation_workflow" / "evaluator.yaml")
+
+    def test_automation_example_validates(self) -> None:
+        RUNNER.validate(self.input_data, ROOT / "schemas" / "package.schema.json", "Automation input")
+
+    def test_automation_receipt_is_generated(self) -> None:
+        scenarios = RUNNER.run(self.input_data, self.taxonomy, self.evaluator, 300, 42)
+        output = RUNNER.receipt(
+            self.input_data, self.taxonomy, self.evaluator, scenarios, 300, 42
+        )
+        RUNNER.validate(output, ROOT / "schemas" / "receipt.schema.json", "Automation receipt")
+        automation = output["automation_result"]
+        self.assertEqual(
+            set(automation["work_allocation"]),
+            {"auto", "review", "escalate", "hold", "manual"},
+        )
+        self.assertAlmostEqual(automation["allocation_mean_total"], 1.0, places=6)
+        self.assertIn("bottleneck", automation)
+        self.assertIn("recommended_poc", automation)
+        self.assertIn("AUTO", output["plain_summary"][1])
+
+    def test_allocation_and_operating_mode_are_separate(self) -> None:
+        scenarios = RUNNER.run(self.input_data, self.taxonomy, self.evaluator, 300, 42)
+        output = RUNNER.receipt(
+            self.input_data, self.taxonomy, self.evaluator, scenarios, 300, 42
+        )
+        automation = output["automation_result"]
+        auto_allocation = automation["work_allocation"]["auto"]["mean"]
+        auto_mode = automation["operating_mode_distribution"]["auto"]["ratio"]
+        self.assertNotEqual(auto_allocation, auto_mode)
+
+    def test_automation_sample_receipt_matches_schema(self) -> None:
+        with (ROOT / "receipts" / "data_entry_automation.sample.json").open(encoding="utf-8") as fh:
+            sample = json.load(fh)
+        RUNNER.validate(sample, ROOT / "schemas" / "receipt.schema.json", "Automation sample Receipt")
+
+
+if __name__ == "__main__":
+    unittest.main()
