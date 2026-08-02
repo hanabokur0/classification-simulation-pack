@@ -1,37 +1,105 @@
-# Classification Simulation Pack v0.5.0
+# Classification Simulation Pack
 
-> **More verified input does not add points. It calibrates the worlds being simulated.**
+> **Package real-world work into an evidence-calibrated simulation workload, run many possible operating conditions, and return an auditable Receipt.**
 
-Classification Simulation Pack turns a plan or workflow into a YAML workload, samples its variable conditions, classifies many possible worlds, and returns an auditable Receipt.
+**日本語概要:** 自然文・業務ログ・実績値を、検証可能なYAMLシミュレーションPackageへ変換するための小さな規格と実行系です。条件の可変域から多数のシナリオを生成し、結果を有限の状態へ分類して、「どの条件なら回るか」「どこで詰まるか」「次に何を測るか」をReceiptとして返します。
 
-## v0.5.0: four fixed transport contracts
+Classification Simulation Pack does **not** claim to predict the future. It makes assumptions visible, tests many declared conditions reproducibly, and records what the model could and could not determine.
+
+## What goes in, and what comes back?
+
+### Input
+
+A plan or workflow, plus whatever evidence is available:
+
+- natural-language descriptions;
+- operating logs and historical measurements;
+- public information and reported values;
+- assumptions that still need verification; and
+- the compute requirements of the simulation workload.
+
+### Output
+
+A machine-readable and human-readable Receipt containing:
+
+- the distribution of classified outcomes;
+- effective variable ranges after evidence calibration;
+- bottlenecks and boundary conditions;
+- unresolved variables and explicit HOLDs;
+- reusable failure patterns and transfer candidates;
+- suggested next Packages or PoC steps; and
+- seed, versions, digests, provenance, and workload usage.
 
 ```text
-Natural language, logs, documents, measurements
-        ↓
-Evidence Pack
-        ↓
-Simulation Package
-        ↓
-Workload Manifest
-        ↓
-Runner / spare compute
-        ↓
-Simulation Receipt
+Natural language / logs / measurements
+                ↓
+          Evidence Pack
+                ↓
+        Simulation Package
+                ↓
+         Workload Manifest
+                ↓
+          Reference Runner
+                ↓
+       Simulation Receipt
+                ↓
+       Next Package / PoC / HOLD
+
+Future operation layer:
+Workload Manifest → Capacity Router → available / spare compute
 ```
 
-The four primary schemas are:
+## A concrete example: AI workflow automation
 
-- `schemas/evidence-pack.schema.json`
-- `schemas/simulation-package.schema.json`
-- `schemas/workload-manifest.schema.json`
-- `schemas/simulation-receipt.schema.json`
+The bundled example asks:
 
-`package.schema.json` and `receipt.schema.json` remain compatibility aliases used by the reference CLI.
+> For a monthly data-entry workflow, which records can be automated, which need human review, which require specialist escalation, and which must be held?
 
-## What “more information improves precision” means
+The Package varies conditions such as:
 
-A Package begins with declared ranges. Evidence may calibrate those ranges or replace them with empirical samples.
+- incoming record volume;
+- source-system compatibility;
+- exception rate;
+- AI extraction accuracy;
+- rule clarity;
+- human review capacity;
+- labor and tool costs; and
+- the cost of an incorrect record.
+
+Each simulated world is classified as one of:
+
+```text
+AUTO       safe to complete automatically under the declared rules
+REVIEW     AI-assisted, with human confirmation
+ESCALATE   specialist handling required
+HOLD       required evidence, authority, or safety condition is missing
+MANUAL     automation does not provide sufficient operational value
+```
+
+The Receipt separates two different questions:
+
+1. **Work allocation:** On average, what share of records follows each route?
+2. **Operating mode:** Under each complete set of sampled conditions, what mode describes the workflow as a whole?
+
+This prevents an average `AUTO` share from being mistaken for an end-to-end autonomous workflow.
+
+## Why evidence matters
+
+More information does not add points to the result.
+
+It calibrates the worlds being simulated.
+
+```text
+broad assumption
+    ↓ + verified evidence
+narrower or empirical condition distribution
+    ↓
+fewer unsupported simulated worlds
+    ↓
+more decision-ready Receipt
+```
+
+Example:
 
 ```yaml
 variables:
@@ -48,42 +116,109 @@ variables:
       padding_ratio: 0.15
 ```
 
-With enough numeric evidence, the runner derives an effective range and records both the declared and effective ranges in the Receipt. Without enough evidence, it keeps the broad declared range and emits a warning. It never silently invents a precise value.
+If sufficient numeric evidence is available, the runner records both the **declared range** and the **effective calibrated range**. If evidence is insufficient, the broad declared range remains visible and the Receipt emits a warning or HOLD according to `missing_policy`.
 
 Supported calibration methods:
 
-- `observed_range`: observed minimum/maximum plus declared padding;
-- `mean_std`: a bounded normal distribution from evidence mean and standard deviation;
-- `empirical`: resampling from observed values; and
-- `none`: no automatic calibration.
+- `observed_range` — observed minimum and maximum, with declared padding;
+- `mean_std` — a bounded normal distribution derived from evidence;
+- `empirical` — resampling from observed values; and
+- `none` — keep the declared distribution unchanged.
 
-## Compare sparse and calibrated Packages
+This is calibration, not guaranteed real-world predictive accuracy.
 
-Calibrated example:
+## The four transport contracts
+
+v0.5.0 fixes four primary contracts so a simulation workload can be packaged, validated, executed, and returned consistently.
+
+### 1. Evidence Pack
+
+Separates observations, reports, public information, inferences, and assumptions. Each item can carry freshness, confidence, provenance, value, unit, and timestamps.
+
+```text
+schemas/evidence-pack.schema.json
+```
+
+### 2. Simulation Package
+
+Defines the question, variable condition space, formulas, Package selector, evidence references, and optional domain-specific layer. Natural language is not executed directly.
+
+```text
+schemas/simulation-package.schema.json
+```
+
+### 3. Workload Manifest
+
+Describes how the workload may be transported and executed: minimum, target, and maximum runs; CPU/GPU preference; memory; interruptibility; checkpointing; resumption; divisibility; and expansion limits.
+
+```text
+schemas/workload-manifest.schema.json
+```
+
+### 4. Simulation Receipt
+
+Returns outcomes, calibration, data quality, unresolved variables, workload usage, reusable structures, and provenance.
+
+```text
+schemas/simulation-receipt.schema.json
+```
+
+For the complete field-level contract, see [`docs/contracts.md`](docs/contracts.md).
+
+## Quick start
+
+### Requirements
+
+- Python 3.11 or later
+
+Install dependencies and run the tests:
+
+```bash
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
+```
+
+Run the calibrated AI-automation example:
 
 ```bash
 python runner/run.py \
   --package packages/automation_workflow \
   --input examples/data_entry_automation.yaml \
-  --output receipts/data_entry_automation.sample.json \
+  --runs 2000 \
+  --seed 42 \
+  --output receipts/data_entry_automation.json \
   --validate-scenarios
 ```
 
-Sparse-evidence comparison:
+Run the same workflow with sparse evidence:
 
 ```bash
 python runner/run.py \
   --package packages/automation_workflow \
   --input examples/data_entry_automation_sparse.yaml \
-  --output receipts/data_entry_automation_sparse.sample.json \
+  --runs 2000 \
+  --seed 42 \
+  --output receipts/data_entry_automation_sparse.json \
   --validate-scenarios
 ```
 
-The calibrated Receipt should show narrower effective ranges, higher evidence coverage/reliability, and higher model-confidence proxy. The result does not automatically become more favorable; it becomes better constrained.
+Compare the two Receipts. The richer Evidence Pack should calibrate more variables and narrow more ranges. It should **not** automatically produce a more favorable business result.
 
-## Data-quality Receipt
+## Reading a Receipt
 
-Every Receipt now separates:
+Start with these sections:
+
+```text
+plain_summary       human-readable conclusion
+outcomes            classification counts and ratios
+data_quality        evidence coverage, reliability, calibration, readiness
+automation_result   work allocation, operating modes, bottlenecks, PoC proposal
+holds               missing information or blocked decisions
+safety_net          reusable patterns, transfer candidates, next Packages
+provenance          input, rules, schema, seed, and runner lineage
+```
+
+The data-quality fields are routing proxies, not accuracy claims:
 
 ```yaml
 data_quality:
@@ -94,53 +229,25 @@ data_quality:
   model_confidence: 0.0
   mean_range_reduction: 0.0
   unresolved_variables: []
-  calibration_report: {}
 ```
 
-These are transparent routing proxies, not claims of real-world predictive accuracy.
+## Why this is different from running the same prompt 2,000 times
 
-## Workload Manifest
+Classification Simulation Pack separates generation, evaluation, and evidence:
 
-```yaml
-workload:
-  id: automation-workflow-monte-carlo
-  version: 0.1.0
-  estimated_runs:
-    min: 200
-    target: 2000
-    max: 20000
-  resource:
-    cpu: preferred
-    gpu: optional
-    memory_gb: 4
-  execution:
-    interruptible: true
-    checkpointable: true
-    resumable: true
-    divisible: true
-  expansion:
-    allowed: true
-    max_depth: 4
-    stop_when_range_reduction_below: 0.01
-```
+- scenarios are sampled from declared, inspectable distributions;
+- evidence calibrates variables without silently rewriting the question;
+- classification uses ordered, versioned evaluator rules;
+- missing information remains a first-class result;
+- the seed and relevant file digests are recorded; and
+- simulation output is never relabeled as live observation.
 
-The CLI enforces the declared run range. A future Capacity Router can select any run count inside it according to available compute.
-
-## Existing v0.4.0 operation layer
-
-The automation workflow Package remains intact and returns:
-
-- AUTO / REVIEW / ESCALATE / HOLD / MANUAL work allocation;
-- whole-scenario operating-mode distribution;
-- bottleneck and guarded PoC recommendation;
-- reusable failure structures;
-- transfer-domain candidates; and
-- next-Package questions.
+The reference runner stays intentionally thin. Domain knowledge belongs in Packages, taxonomies, evaluator rules, examples, and evidence—not as hidden logic inside the engine.
 
 ## Repository structure
 
 ```text
-classification-simulation-pack-v0.5.0/
+classification-simulation-pack/
 ├─ README.md
 ├─ CHANGELOG.md
 ├─ schemas/
@@ -148,31 +255,96 @@ classification-simulation-pack-v0.5.0/
 │  ├─ simulation-package.schema.json
 │  ├─ workload-manifest.schema.json
 │  ├─ simulation-receipt.schema.json
-│  ├─ package.schema.json
-│  ├─ receipt.schema.json
+│  ├─ package.schema.json          # compatibility alias
+│  ├─ receipt.schema.json          # compatibility alias
 │  └─ scenario.schema.json
 ├─ packages/
-│  ├─ business_plan/
-│  └─ automation_workflow/
+│  ├─ automation_workflow/
+│  └─ business_plan/
 ├─ examples/
-│  ├─ this_project.yaml
 │  ├─ data_entry_automation.yaml
-│  └─ data_entry_automation_sparse.yaml
-├─ runner/run.py
+│  ├─ data_entry_automation_sparse.yaml
+│  └─ this_project.yaml
+├─ runner/
+│  └─ run.py
 ├─ receipts/
-├─ docs/contracts.md
-└─ tests/test_runner.py
+├─ docs/
+│  └─ contracts.md
+├─ tests/
+│  └─ test_runner.py
+└─ requirements.txt
 ```
 
-## Quick start
+## Use it with an AI assistant
 
-Requires Python 3.11 or later.
+The repository is designed to be readable by both humans and AI assistants. A useful starting request is:
 
-```bash
-python -m pip install -r requirements.txt
-python -m unittest discover -s tests -v
-```
+> Read this repository and my workflow description. Separate observed facts, reported information, inferences, and assumptions into an Evidence Pack. Create a valid Simulation Package and Workload Manifest. Do not invent missing values: use visible ranges or HOLDs. Run the automation workflow Package with a fixed seed, validate the scenarios, and explain the Receipt without presenting it as a forecast.
+
+The YAML and JSON contracts are the common language between the user, the AI assistant, the runner, and future capacity-routing systems. They are not intended to become a mandatory end-user interface.
+
+## Current scope
+
+### Implemented in v0.5.0
+
+- four versioned transport contracts;
+- deterministic scenario classification;
+- reproducible seeded runs;
+- evidence-based variable calibration;
+- sparse-evidence warnings and HOLD behavior;
+- AI workflow allocation across AUTO / REVIEW / ESCALATE / HOLD / MANUAL;
+- bottleneck and guarded PoC recommendations;
+- reusable failure structures and next-Package candidates;
+- workload run-range enforcement; and
+- schema and regression tests.
+
+### Not implemented yet
+
+- a production natural-language-to-Package compiler;
+- live business-system connectors;
+- a Capacity Router connected to spare data-center resources;
+- distributed checkpoint and resume across compute nodes;
+- automatic execution of child Packages; or
+- proof of production savings, safety, or predictive accuracy.
+
+These boundaries are deliberate. The current repository defines and tests the **cargo format** before connecting it to a larger compute logistics network.
+
+## Design principles
+
+1. **Classification before prediction**  
+   Classify outcomes under declared conditions. Do not turn synthetic frequency into prophecy.
+
+2. **Evidence changes distributions, not scores**  
+   Better evidence narrows or reshapes the condition space.
+
+3. **Missing information is a valid result**  
+   Use warnings, broad ranges, or HOLDs instead of invented precision.
+
+4. **Deterministic evaluation first**  
+   AI may help prepare Packages and explain Receipts, but declared rules control classification.
+
+5. **Receipts carry lineage**  
+   Record versions, seed, digests, evidence level, unresolved conditions, and provenance.
+
+6. **The workload must be transportable**  
+   Execution requirements, interruptibility, checkpointing, and run limits belong in the Package contract.
+
+7. **Failure should not be a total loss**  
+   Reusable structures, boundary conditions, and next questions can be transferred to other Packages.
+
+8. **Keep the core small**  
+   Add new domains as Packages rather than embedding them in the runner.
 
 ## Safety boundary
 
-v0.5.0 does not prove production accuracy, savings, safety, or civilizational value. It does not connect to live business systems or spare data-center capacity. It provides the packaging, calibration, workload, and Receipt contracts needed to test those connections without hiding assumptions.
+Classification Simulation Pack is not:
+
+- a guarantee that a business or automation will succeed;
+- a replacement for live observation, controlled experiments, or operational testing;
+- financial, legal, medical, or safety advice;
+- proof that simulated cases are statistically independent real-world observations; or
+- permission to automate high-impact decisions without domain review and human authority.
+
+Its purpose is narrower:
+
+> **Convert an ambiguous workflow into visible assumptions, evidence-calibrated condition ranges, repeatable scenarios, finite operating states, and an auditable Receipt.**
