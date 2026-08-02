@@ -1,0 +1,654 @@
+{
+  "receipt_id": "sim-20260801T013829Z-16d1bbcf",
+  "created_at": "2026-08-01T01:38:29.503705Z",
+  "project": {
+    "name": "Classification Simulation Pack",
+    "plain_description": "A GitHub tool that tests a business or project many times, sorts the outcomes into plain-language stages, and returns what is likely to work, what may fail, and what to do next.\n",
+    "target_users": [
+      "People testing a new business or project",
+      "Teams comparing several plans",
+      "Investors or reviewers stress-testing assumptions"
+    ],
+    "business_model": "Keep the core schemas, runner, and examples open on GitHub. Sell optional domain packages, high-volume execution, and implementation support later.\n",
+    "language": "en",
+    "current_stage": "launched"
+  },
+  "question": "Can Classification Simulation Pack become a useful open-source project and produce a credible path toward a small paid business?\n",
+  "answer": {
+    "verdict_code": "strong_small_business_signal",
+    "verdict": "This project is worth releasing as a small product and testing with real users now.",
+    "success_score": 53.2075,
+    "success_label": "Strong test signal",
+    "likely_outcome": {
+      "class_id": "useful_free_tool",
+      "plain_label": "It becomes a useful free tool",
+      "ratio": 0.3375
+    },
+    "confidence": "low",
+    "confidence_reason": "The project has not yet been calibrated with real external usage, payment, and repeat-use data."
+  },
+  "plain_summary": [
+    "A GitHub tool that tests a business or project many times, sorts the outcomes into plain-language stages, and returns what is likely to work, what may fail, and what to do next.\n",
+    "Overall success score: 53/100. Verdict: Strong test signal.",
+    "72% of scenarios became useful to someone, and 38% produced paid demand.",
+    "11% became a repeatable business.",
+    "Biggest risk: It is published but almost nobody uses it.",
+    "Next action: Get three external users to complete the workflow and share their Receipts.",
+    "Input readiness is EXPLORATORY; model-confidence proxy is 2%, and mean range reduction is 0%."
+  ],
+  "outcomes": {
+    "not_launched": {
+      "plain_label": "It never gets published",
+      "kind": "failure",
+      "score": 0.0,
+      "count": 261,
+      "ratio": 0.1305
+    },
+    "no_users": {
+      "plain_label": "It is published but almost nobody uses it",
+      "kind": "failure",
+      "score": 15.0,
+      "count": 306,
+      "ratio": 0.153
+    },
+    "useful_free_tool": {
+      "plain_label": "It becomes a useful free tool",
+      "kind": "intermediate",
+      "score": 60.0,
+      "count": 675,
+      "ratio": 0.3375
+    },
+    "small_paid_product": {
+      "plain_label": "It sells as a small product",
+      "kind": "success",
+      "score": 75.0,
+      "count": 535,
+      "ratio": 0.2675
+    },
+    "repeatable_business": {
+      "plain_label": "It becomes a repeatable small business",
+      "kind": "success",
+      "score": 90.0,
+      "count": 110,
+      "ratio": 0.055
+    },
+    "platform_signal": {
+      "plain_label": "It starts becoming a market others can build on",
+      "kind": "success",
+      "score": 100.0,
+      "count": 113,
+      "ratio": 0.0565
+    },
+    "insufficient_context": {
+      "plain_label": "There is not enough information to judge",
+      "kind": "hold",
+      "score": 0.0,
+      "count": 0,
+      "ratio": 0.0
+    }
+  },
+  "funnel": [
+    {
+      "id": "launched",
+      "label": "The project is published",
+      "count": 1739,
+      "ratio": 0.8695,
+      "drop_from_previous": 0.13049999999999995
+    },
+    {
+      "id": "useful",
+      "label": "Someone outside the project receives a useful Receipt",
+      "count": 1433,
+      "ratio": 0.7165,
+      "drop_from_previous": 0.15300000000000002
+    },
+    {
+      "id": "paid",
+      "label": "At least a small paid product appears",
+      "count": 758,
+      "ratio": 0.379,
+      "drop_from_previous": 0.3375
+    },
+    {
+      "id": "business",
+      "label": "Paid use becomes repeatable",
+      "count": 223,
+      "ratio": 0.1115,
+      "drop_from_previous": 0.2675
+    },
+    {
+      "id": "platform",
+      "label": "Other people build packages on top of it",
+      "count": 113,
+      "ratio": 0.0565,
+      "drop_from_previous": 0.055
+    }
+  ],
+  "main_risk": {
+    "class_id": "no_users",
+    "plain_label": "It is published but almost nobody uses it",
+    "ratio": 0.153,
+    "response": "Put one complete example in front of real users and collect three external Receipts."
+  },
+  "next_action": {
+    "stage_id": "useful",
+    "stage_label": "Someone outside the project receives a useful Receipt",
+    "action": "Get three external users to complete the workflow and share their Receipts.",
+    "reason": "The declared current stage is \"The project is published\". The next unproven milestone is \"Someone outside the project receives a useful Receipt\", reached in 72% of scenarios."
+  },
+  "decisive_variables": [
+    {
+      "variable": "launch_ready",
+      "correlation": 0.674635,
+      "direction": "positive"
+    },
+    {
+      "variable": "external_receipt_rate",
+      "correlation": 0.388266,
+      "direction": "positive"
+    },
+    {
+      "variable": "annual_effective_visitors",
+      "correlation": 0.252759,
+      "direction": "positive"
+    },
+    {
+      "variable": "execution_rate",
+      "correlation": 0.195231,
+      "direction": "positive"
+    },
+    {
+      "variable": "average_paid_value",
+      "correlation": 0.184092,
+      "direction": "positive"
+    }
+  ],
+  "safety_net": {
+    "enabled": true,
+    "total_loss_avoided": true,
+    "reusable_patterns": [
+      {
+        "pattern_id": "utility_without_payment",
+        "source_classes": [
+          "useful_free_tool"
+        ],
+        "observed_ratio": 0.3375
+      },
+      {
+        "pattern_id": "value_capture_gap",
+        "source_classes": [
+          "useful_free_tool"
+        ],
+        "observed_ratio": 0.3375
+      },
+      {
+        "pattern_id": "early_paid_demand",
+        "source_classes": [
+          "small_paid_product"
+        ],
+        "observed_ratio": 0.2675
+      },
+      {
+        "pattern_id": "repeatability_gap",
+        "source_classes": [
+          "small_paid_product"
+        ],
+        "observed_ratio": 0.2675
+      },
+      {
+        "pattern_id": "activation_friction",
+        "source_classes": [
+          "no_users"
+        ],
+        "observed_ratio": 0.153
+      },
+      {
+        "pattern_id": "demand_discovery_gap",
+        "source_classes": [
+          "no_users"
+        ],
+        "observed_ratio": 0.153
+      },
+      {
+        "pattern_id": "distribution_bottleneck",
+        "source_classes": [
+          "no_users"
+        ],
+        "observed_ratio": 0.153
+      },
+      {
+        "pattern_id": "overbuild_risk",
+        "source_classes": [
+          "not_launched"
+        ],
+        "observed_ratio": 0.1305
+      },
+      {
+        "pattern_id": "release_bottleneck",
+        "source_classes": [
+          "not_launched"
+        ],
+        "observed_ratio": 0.1305
+      },
+      {
+        "pattern_id": "compatibility_governance",
+        "source_classes": [
+          "platform_signal"
+        ],
+        "observed_ratio": 0.0565
+      },
+      {
+        "pattern_id": "third_party_extension",
+        "source_classes": [
+          "platform_signal"
+        ],
+        "observed_ratio": 0.0565
+      },
+      {
+        "pattern_id": "operational_standardization",
+        "source_classes": [
+          "repeatable_business"
+        ],
+        "observed_ratio": 0.055
+      },
+      {
+        "pattern_id": "repeatable_value_loop",
+        "source_classes": [
+          "repeatable_business"
+        ],
+        "observed_ratio": 0.055
+      }
+    ],
+    "transfer_candidates": [
+      {
+        "domain": "community_services",
+        "source_classes": [
+          "useful_free_tool"
+        ],
+        "observed_ratio": 0.3375
+      },
+      {
+        "domain": "open_source_tools",
+        "source_classes": [
+          "useful_free_tool"
+        ],
+        "observed_ratio": 0.3375
+      },
+      {
+        "domain": "public_goods",
+        "source_classes": [
+          "useful_free_tool"
+        ],
+        "observed_ratio": 0.3375
+      },
+      {
+        "domain": "consulting_products",
+        "source_classes": [
+          "small_paid_product"
+        ],
+        "observed_ratio": 0.2675
+      },
+      {
+        "domain": "data_services",
+        "source_classes": [
+          "small_paid_product"
+        ],
+        "observed_ratio": 0.2675
+      },
+      {
+        "domain": "niche_software",
+        "source_classes": [
+          "small_paid_product"
+        ],
+        "observed_ratio": 0.2675
+      },
+      {
+        "domain": "local_services",
+        "source_classes": [
+          "no_users"
+        ],
+        "observed_ratio": 0.153
+      },
+      {
+        "domain": "public_information_projects",
+        "source_classes": [
+          "no_users"
+        ],
+        "observed_ratio": 0.153
+      },
+      {
+        "domain": "software_tools",
+        "source_classes": [
+          "no_users"
+        ],
+        "observed_ratio": 0.153
+      },
+      {
+        "domain": "internal_automation",
+        "source_classes": [
+          "not_launched"
+        ],
+        "observed_ratio": 0.1305
+      },
+      {
+        "domain": "open_source_release",
+        "source_classes": [
+          "not_launched"
+        ],
+        "observed_ratio": 0.1305
+      },
+      {
+        "domain": "product_launch",
+        "source_classes": [
+          "not_launched"
+        ],
+        "observed_ratio": 0.1305
+      },
+      {
+        "domain": "marketplaces",
+        "source_classes": [
+          "platform_signal"
+        ],
+        "observed_ratio": 0.0565
+      },
+      {
+        "domain": "package_ecosystems",
+        "source_classes": [
+          "platform_signal"
+        ],
+        "observed_ratio": 0.0565
+      },
+      {
+        "domain": "protocol_standards",
+        "source_classes": [
+          "platform_signal"
+        ],
+        "observed_ratio": 0.0565
+      },
+      {
+        "domain": "managed_services",
+        "source_classes": [
+          "repeatable_business"
+        ],
+        "observed_ratio": 0.055
+      },
+      {
+        "domain": "subscription_services",
+        "source_classes": [
+          "repeatable_business"
+        ],
+        "observed_ratio": 0.055
+      },
+      {
+        "domain": "training_products",
+        "source_classes": [
+          "repeatable_business"
+        ],
+        "observed_ratio": 0.055
+      }
+    ],
+    "next_package_candidates": [
+      {
+        "id": "narrow-paid-extension-test",
+        "source_class": "useful_free_tool",
+        "source_ratio": 0.3375,
+        "question": "Under which narrow use case does payment appear without reducing free usefulness?",
+        "reason": "Observed usefulness can be transferred into a value-capture experiment."
+      },
+      {
+        "id": "repeat-sale-test",
+        "source_class": "small_paid_product",
+        "source_ratio": 0.2675,
+        "question": "Which delivery and pricing conditions reproduce a second and third sale?",
+        "reason": "A first sale is reusable evidence of demand, while the remaining uncertainty is repeatability."
+      },
+      {
+        "id": "external-usage-test",
+        "source_class": "no_users",
+        "source_ratio": 0.153,
+        "question": "Which acquisition and onboarding conditions produce three completed external Receipts?",
+        "reason": "Low usage can be reused as a demand, distribution, and activation problem rather than discarded as total failure."
+      }
+    ],
+    "civilizational_yield_proxy": {
+      "status": "proxy_only",
+      "marginal_yield_status": "not_computed",
+      "uncertainty_reduction": 0.110272,
+      "reusable_pattern_count": 13,
+      "transfer_domain_count": 18,
+      "next_option_count": 3,
+      "warning": "This is a routing proxy, not a direct measurement of civilizational value. Marginal yield requires parent-child Receipt comparison."
+    },
+    "expansion": {
+      "decision": "continue",
+      "reason": "3 next-package candidates remain after this Receipt."
+    }
+  },
+  "evidence": {
+    "level": "synthetic_simulation",
+    "pack_id": "classification-pack-assumptions",
+    "pack_version": "0.1.0",
+    "runs": 2000,
+    "seed": 42,
+    "warning": "This is not a measured market probability. It is the result of 2,000 runs under the declared assumptions and classification rules."
+  },
+  "data_quality": {
+    "readiness_status": "exploratory",
+    "evidence_count": 1,
+    "referenced_evidence_count": 0,
+    "evidence_coverage": 0.0,
+    "evidence_reliability": 0.0,
+    "variable_calibration": 0.0,
+    "model_confidence": 0.016541,
+    "outcome_stability_proxy": 0.110272,
+    "mean_range_reduction": 0.0,
+    "unresolved_variables": [],
+    "calibration_report": {
+      "launch_ready": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": null,
+        "effective_bounds": null,
+        "range_reduction_ratio": 0.0
+      },
+      "annual_effective_visitors": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": null,
+        "effective_bounds": null,
+        "range_reduction_ratio": 0.0
+      },
+      "execution_rate": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.01,
+          "max": 0.05,
+          "width": 0.04
+        },
+        "effective_bounds": {
+          "min": 0.01,
+          "max": 0.05,
+          "width": 0.04
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "external_receipt_rate": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.0,
+          "max": 0.3,
+          "width": 0.3
+        },
+        "effective_bounds": {
+          "min": 0.0,
+          "max": 0.3,
+          "width": 0.3
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "paid_conversion_rate": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.0,
+          "max": 0.08,
+          "width": 0.08
+        },
+        "effective_bounds": {
+          "min": 0.0,
+          "max": 0.08,
+          "width": 0.08
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "average_paid_value": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": null,
+        "effective_bounds": null,
+        "range_reduction_ratio": 0.0
+      },
+      "repeat_paid_rate": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.0,
+          "max": 0.6,
+          "width": 0.6
+        },
+        "effective_bounds": {
+          "min": 0.0,
+          "max": 0.6,
+          "width": 0.6
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "external_package_rate": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.0,
+          "max": 0.12,
+          "width": 0.12
+        },
+        "effective_bounds": {
+          "min": 0.0,
+          "max": 0.12,
+          "width": 0.12
+        },
+        "range_reduction_ratio": 0.0
+      }
+    },
+    "warnings": [],
+    "interpretation": "More evidence improves this Receipt only by calibrating variable ranges and distributions; it does not add points directly."
+  },
+  "workload_result": {
+    "manifest_id": "business-plan-monte-carlo",
+    "manifest_version": "0.1.0",
+    "target_runs": 2000,
+    "selected_runs": 2000,
+    "within_declared_range": true,
+    "resource": {
+      "cpu": "preferred",
+      "gpu": "none",
+      "memory_gb": 2
+    },
+    "execution": {
+      "interruptible": true,
+      "checkpointable": true,
+      "resumable": true,
+      "divisible": true
+    },
+    "expansion": {
+      "allowed": true,
+      "max_depth": 3,
+      "stop_when_range_reduction_below": 0.01
+    }
+  },
+  "metric_summaries": {
+    "external_executions": {
+      "count": 2000,
+      "min": 1.080221746237367,
+      "mean": 37.590537389728546,
+      "median": 24.74817531736501,
+      "max": 565.6027755376222
+    },
+    "external_receipts": {
+      "count": 2000,
+      "min": 0.000584884871587995,
+      "mean": 5.675886953925091,
+      "median": 3.112452083746516,
+      "max": 103.95535625808725
+    },
+    "paid_customers": {
+      "count": 2000,
+      "min": 4.253074422661768e-06,
+      "mean": 0.23041730579937922,
+      "median": 0.10073521764500934,
+      "max": 5.981790471328705
+    },
+    "annual_revenue": {
+      "count": 2000,
+      "min": 0.0,
+      "mean": 30580.055759399642,
+      "median": 5665.300089485445,
+      "max": 1794537.1413986115
+    },
+    "repeat_paid_customers": {
+      "count": 2000,
+      "min": 7.461894008932492e-07,
+      "mean": 0.06976067146774202,
+      "median": 0.024343937446105433,
+      "max": 2.9809744471313726
+    },
+    "external_packages": {
+      "count": 2000,
+      "min": 1.8965015077972276e-05,
+      "mean": 0.3343945176688158,
+      "median": 0.15069620003381792,
+      "max": 6.834506857147422
+    }
+  },
+  "holds": [],
+  "provenance": {
+    "runner_version": "0.5.0",
+    "input_digest": "sha256:3f3139a521bc567ac4a8522d9c093ecce18993c13113e21b485c1c552bb3a46d",
+    "taxonomy_digest": "sha256:667160ebb22f3a7dc1f833ad64e397ebc2b974a539758098ab0365ac22707d05",
+    "evaluator_digest": "sha256:cb738b1dc1889391d80c5b5d99a11445d81332771f2082f355df9cf2e8c13c76",
+    "effective_variables_digest": "sha256:15d53d9ba905fa05a0f0a84f2412e0c840917ed5e2e58377922d08c30a57dc19"
+  }
+}
