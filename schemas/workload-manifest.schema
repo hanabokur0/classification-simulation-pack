@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/classification-simulation-pack/v0.5/workload-manifest.schema.json",
+  "title": "Workload Manifest v0.5.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "estimated_runs",
+    "resource",
+    "execution",
+    "expansion"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "estimated_runs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min",
+        "target",
+        "max"
+      ],
+      "properties": {
+        "min": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "target": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        },
+        "max": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000000
+        }
+      }
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cpu",
+        "gpu",
+        "memory_gb"
+      ],
+      "properties": {
+        "cpu": {
+          "type": "string",
+          "enum": [
+            "required",
+            "preferred",
+            "optional",
+            "none"
+          ]
+        },
+        "gpu": {
+          "type": "string",
+          "enum": [
+            "required",
+            "preferred",
+            "optional",
+            "none"
+          ]
+        },
+        "memory_gb": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "interruptible",
+        "checkpointable",
+        "resumable",
+        "divisible"
+      ],
+      "properties": {
+        "interruptible": {
+          "type": "boolean"
+        },
+        "checkpointable": {
+          "type": "boolean"
+        },
+        "resumable": {
+          "type": "boolean"
+        },
+        "divisible": {
+          "type": "boolean"
+        }
+      }
+    },
+    "expansion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed",
+        "max_depth"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        },
+        "max_depth": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "stop_when_range_reduction_below": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    }
+  }
+}
