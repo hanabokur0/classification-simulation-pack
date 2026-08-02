@@ -1,0 +1,275 @@
+id: data-entry-automation-sparse-example
+version: 0.5.0
+project:
+  name: 月次データ入力業務のAI自動化（情報不足ケース）
+  plain_description: 同じ業務を、実測Evidenceなしの広い可変域で探索し、校正済みPackageとの差を確認します。
+  target_users:
+  - 業務責任者
+  - AI導入担当
+  - データ入力担当
+  business_model: AI自動化PoC設計
+  language: ja
+  current_stage: assessable
+question: 'このデータ入力業務は、どこまでAIで自動化でき、どこに人間確認・専門対応・HOLDを残すべきか。
+
+  '
+automation:
+  workflow_name: 月次データ入力と基幹登録
+  workflow_description: CSVと帳票から必要項目を抽出し、形式確認後に基幹システムへ登録する。
+  unit_of_work: 1レコード
+  risk_level: medium
+  current_process: 担当者が全件を目視し、Excelで整形してから基幹システムへ手入力する。
+  owner: 業務運用チーム
+  constraints:
+  - 元データの列名や帳票形式が途中で変わることがある
+  - 高額・例外案件は専門担当の確認が必要
+  guardrails:
+  - 不明な項目は推測せずHOLDへ送る
+  - 高影響案件は自動登録しない
+  - 全処理にAction Receiptを残す
+simulation:
+  runs: 2000
+  seed: 42
+  evidence_level: synthetic_simulation
+variables:
+  incoming_volume:
+    distribution: integer_uniform
+    min: 1000
+    max: 5000
+    label: 月間処理件数
+    evidence_refs:
+    - ev-volume
+    confidence: high
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.1
+  system_compatibility:
+    distribution: uniform
+    min: 0.45
+    max: 0.98
+    label: 自動経路へ投入できる形式・権限の割合
+    evidence_refs:
+    - ev-compatibility
+    confidence: high
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.15
+  exception_rate:
+    distribution: uniform
+    min: 0.02
+    max: 0.25
+    label: 専門対応が必要な例外率
+    evidence_refs:
+    - ev-exceptions
+    confidence: high
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.15
+  ai_accuracy:
+    distribution: uniform
+    min: 0.84
+    max: 0.995
+    label: AI抽出・分類精度
+    evidence_refs:
+    - ev-ai-accuracy
+    confidence: medium
+    missing_policy: widen_range
+    calibration:
+      method: mean_std
+      min_samples: 3
+      padding_ratio: 0.1
+  rule_clarity:
+    distribution: uniform
+    min: 0.45
+    max: 0.98
+    label: 業務ルールの明確度
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  human_review_capacity:
+    distribution: integer_uniform
+    min: 100
+    max: 1200
+    label: 月間人間確認可能件数
+    evidence_refs:
+    - ev-review-capacity
+    confidence: high
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.1
+  manual_minutes_per_record:
+    distribution: uniform
+    min: 1.5
+    max: 5.0
+    evidence_refs:
+    - ev-manual-time
+    confidence: high
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.1
+  review_minutes_per_record:
+    distribution: uniform
+    min: 0.5
+    max: 2.5
+    evidence_refs:
+    - ev-review-time
+    confidence: high
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.1
+  escalation_minutes_per_record:
+    distribution: uniform
+    min: 4.0
+    max: 15.0
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  hold_minutes_per_record:
+    distribution: uniform
+    min: 0.3
+    max: 2.0
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  ai_seconds_per_record:
+    distribution: uniform
+    min: 0.2
+    max: 3.0
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  labor_cost_per_hour:
+    distribution: uniform
+    min: 1800
+    max: 4500
+    evidence_refs:
+    - ev-labor-cost
+    confidence: medium
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.1
+  error_cost_per_record:
+    distribution: lognormal
+    median: 1200
+    sigma: 0.8
+    min: 200
+    max: 8000
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  monthly_tool_cost:
+    distribution: integer_uniform
+    min: 50000
+    max: 300000
+    evidence_refs:
+    - ev-tool-cost
+    confidence: medium
+    missing_policy: widen_range
+    calibration:
+      method: observed_range
+      min_samples: 3
+      padding_ratio: 0.1
+  external_impact:
+    values:
+    - low
+    - medium
+    - high
+    weights:
+    - 0.55
+    - 0.35
+    - 0.1
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+constants: {}
+context:
+  domain: back_office_data_entry
+package:
+  id: automation_workflow
+  taxonomy: taxonomy.yaml
+  evaluator: evaluator.yaml
+funnel:
+- id: assessable
+  label: 条件を照合して運用判断できる
+  classes:
+  - auto
+  - review
+  - escalate
+  - manual
+  next_action: 入力形式、処理量、例外種類、確認時間の実測値を揃える。
+- id: ai_assisted
+  label: AIを分類・抽出・振り分けに使える
+  classes:
+  - auto
+  - review
+  - escalate
+  next_action: AIの出力と人間修正理由を記録する小規模PoCを行う。
+- id: controlled_automation
+  label: AUTOまたはREVIEW経路で管理できる
+  classes:
+  - auto
+  - review
+  next_action: 低リスク案件をAUTO候補にし、残りをREVIEWへ送る。
+- id: auto_ready
+  label: 限定的な自動完了が成立する
+  classes:
+  - auto
+  next_action: 切り戻し可能な実データで、自動完了境界を校正する。
+metrics:
+- auto_share
+- review_share
+- escalate_share
+- hold_share
+- manual_share
+- controlled_share
+- ai_assisted_share
+- review_utilization
+- residual_error_rate
+- baseline_labor_hours
+- hybrid_labor_hours
+- baseline_labor_cost
+- hybrid_labor_cost
+- expected_error_cost
+- monthly_net_value
+safety_net:
+  enabled: true
+  min_outcome_ratio: 0.05
+  max_next_packages: 3
+evidence_pack:
+  id: data-entry-evidence-empty
+  version: 0.1.0
+  items: []
+workload:
+  id: automation-workflow-monte-carlo
+  version: 0.1.0
+  estimated_runs:
+    min: 200
+    target: 2000
+    max: 20000
+  resource:
+    cpu: preferred
+    gpu: optional
+    memory_gb: 4
+  execution:
+    interruptible: true
+    checkpointable: true
+    resumable: true
+    divisible: true
+  expansion:
+    allowed: true
+    max_depth: 4
+    stop_when_range_reduction_below: 0.01
