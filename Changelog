@@ -1,0 +1,11 @@
+# Changelog
+
+## 0.5.0
+
+- Fixed four primary contracts: Evidence Pack, Simulation Package, Workload Manifest, and Simulation Receipt.
+- Added evidence-backed variable calibration: observed range, mean/stddev, and empirical sampling.
+- Added explicit missing-evidence policies.
+- Added data-quality and calibration reports to every Receipt.
+- Added workload run-range enforcement and workload results.
+- Added calibrated and sparse versions of the automation example.
+- Retained v0.4.0 automation routing and v0.3.0 safety-net behavior.
