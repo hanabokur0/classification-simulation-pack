@@ -1,42 +1,177 @@
 id: this-project
+version: 0.5.0
+project:
+  name: Classification Simulation Pack
+  plain_description: 'A GitHub tool that tests a business or project many times, sorts the outcomes into
+    plain-language stages, and returns what is likely to work, what may fail, and what to do next.
 
-question: >
-  Can Classification Simulation Pack become a useful open-source project
-  and produce a credible path toward paid extensions?
+    '
+  target_users:
+  - People testing a new business or project
+  - Teams comparing several plans
+  - Investors or reviewers stress-testing assumptions
+  business_model: 'Keep the core schemas, runner, and examples open on GitHub. Sell optional domain packages,
+    high-volume execution, and implementation support later.
 
+    '
+  language: en
+  current_stage: launched
+question: 'Can Classification Simulation Pack become a useful open-source project and produce a credible
+  path toward a small paid business?
+
+  '
 simulation:
   runs: 2000
   seed: 42
-
+  evidence_level: synthetic_simulation
 variables:
+  launch_ready:
+    distribution: boolean
+    probability: 0.86
+    description: Probability that the minimum useful version is actually published.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
   annual_effective_visitors:
     distribution: lognormal
     median: 900
     sigma: 0.8
-
+    description: People who reach the repository with enough interest to understand it.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
   execution_rate:
     distribution: uniform
     min: 0.01
     max: 0.05
-
+    description: Share of effective visitors who run an example.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
   external_receipt_rate:
     distribution: uniform
-    min: 0.00
-    max: 0.30
-
+    min: 0.0
+    max: 0.3
+    description: Share of executions that finish with a useful external Receipt.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
   paid_conversion_rate:
     distribution: uniform
-    min: 0.00
+    min: 0.0
     max: 0.08
-
+    description: Share of external Receipt users who buy an extension or support.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
   average_paid_value:
     values:
-      - 0
-      - 50000
-      - 150000
-      - 300000
-
+    - 0
+    - 50000
+    - 150000
+    - 300000
+    description: Annual value in JPY for each paid user in this early-stage model.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
+  repeat_paid_rate:
+    distribution: uniform
+    min: 0.0
+    max: 0.6
+    description: Share of paid users who return or buy again.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
+  external_package_rate:
+    distribution: uniform
+    min: 0.0
+    max: 0.12
+    description: Share of external Receipt users who create a reusable package.
+    evidence_refs: []
+    confidence: low
+    missing_policy: continue_with_warning
 package:
   id: business_plan
   taxonomy: packages/business_plan/taxonomy.yaml
   evaluator: packages/business_plan/evaluator.yaml
+funnel:
+- id: launched
+  label: The project is published
+  classes:
+  - no_users
+  - useful_free_tool
+  - small_paid_product
+  - repeatable_business
+  - platform_signal
+  next_action: Publish the smallest working version before adding more features.
+- id: useful
+  label: Someone outside the project receives a useful Receipt
+  classes:
+  - useful_free_tool
+  - small_paid_product
+  - repeatable_business
+  - platform_signal
+  next_action: Get three external users to complete the workflow and share their Receipts.
+- id: paid
+  label: At least a small paid product appears
+  classes:
+  - small_paid_product
+  - repeatable_business
+  - platform_signal
+  next_action: Offer one narrow paid package tied to a proven use case.
+- id: business
+  label: Paid use becomes repeatable
+  classes:
+  - repeatable_business
+  - platform_signal
+  next_action: Repeat the same paid result with a second and third user.
+- id: platform
+  label: Other people build packages on top of it
+  classes:
+  - platform_signal
+  next_action: Stabilize the schema and make third-party package creation easy.
+metrics:
+- external_executions
+- external_receipts
+- paid_customers
+- annual_revenue
+- repeat_paid_customers
+- external_packages
+safety_net:
+  enabled: true
+  min_outcome_ratio: 0.05
+  max_next_packages: 3
+evidence_pack:
+  id: classification-pack-assumptions
+  version: 0.1.0
+  items:
+  - id: ev-open-source-assumption
+    type: assumed
+    source_ref: project-author-assumption
+    observed_at: null
+    freshness: unknown
+    confidence: low
+    subject: business_plan_ranges
+    value: The commercial ranges are hypotheses, not measured demand.
+    unit: null
+    notes: null
+workload:
+  id: business-plan-monte-carlo
+  version: 0.1.0
+  estimated_runs:
+    min: 200
+    target: 2000
+    max: 20000
+  resource:
+    cpu: preferred
+    gpu: none
+    memory_gb: 2
+  execution:
+    interruptible: true
+    checkpointable: true
+    resumable: true
+    divisible: true
+  expansion:
+    allowed: true
+    max_depth: 3
+    stop_when_range_reduction_below: 0.01
