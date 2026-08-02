@@ -1,15 +1,54 @@
 {
-  "scenario_id": "this-project-run-000042",
-  "run_index": 42,
-  "sampled_values": {
-    "execution_rate": 0.034,
-    "annual_effective_visitors": 1240
-  },
-  "derived_values": {
-    "external_executions": 42
-  },
-  "classification": {
-    "class_id": "viable_if_narrowed",
-    "rule_id": "viable-if-narrowed"
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/classification-simulation-pack/scenario.schema.json",
+  "title": "Classification Simulation Scenario",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "scenario_id",
+    "run_index",
+    "sampled_values",
+    "derived_values",
+    "classification"
+  ],
+  "properties": {
+    "scenario_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_index": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sampled_values": {
+      "type": "object"
+    },
+    "derived_values": {
+      "type": "object"
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "class_id", "rule_id", "holds"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["classified", "held"]
+        },
+        "class_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule_id": {
+          "type": ["string", "null"]
+        },
+        "holds": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        }
+      }
+    }
   }
 }
