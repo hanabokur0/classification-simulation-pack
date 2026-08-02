@@ -1,0 +1,360 @@
+id: automation_workflow_evaluator
+version: 0.4.0
+package_id: automation_workflow
+taxonomy_ref: taxonomy.yaml
+
+required_inputs:
+  - incoming_volume
+  - system_compatibility
+  - exception_rate
+  - ai_accuracy
+  - rule_clarity
+  - human_review_capacity
+  - manual_minutes_per_record
+  - review_minutes_per_record
+  - escalation_minutes_per_record
+  - hold_minutes_per_record
+  - ai_seconds_per_record
+  - labor_cost_per_hour
+  - error_cost_per_record
+  - monthly_tool_cost
+  - external_impact
+
+derived_metrics:
+  compatible_records:
+    expression: incoming_volume * system_compatibility
+  hold_records:
+    expression: max(0, incoming_volume - compatible_records)
+  exception_records:
+    expression: compatible_records * exception_rate
+  standard_records:
+    expression: max(0, compatible_records - exception_records)
+  auto_records:
+    expression: standard_records * ai_accuracy * rule_clarity
+  review_demand_records:
+    expression: max(0, standard_records - auto_records)
+  review_records:
+    expression: min(review_demand_records, human_review_capacity)
+  manual_records:
+    expression: max(0, review_demand_records - review_records)
+
+  auto_share:
+    expression: auto_records / max(incoming_volume, 1)
+  review_share:
+    expression: review_records / max(incoming_volume, 1)
+  escalate_share:
+    expression: exception_records / max(incoming_volume, 1)
+  hold_share:
+    expression: hold_records / max(incoming_volume, 1)
+  manual_share:
+    expression: manual_records / max(incoming_volume, 1)
+  controlled_share:
+    expression: auto_share + review_share
+  ai_assisted_share:
+    expression: auto_share + review_share + escalate_share
+
+  review_utilization:
+    expression: review_demand_records / max(human_review_capacity, 1)
+  residual_error_rate:
+    expression: max(0, (1 - ai_accuracy) * auto_share)
+  baseline_labor_hours:
+    expression: incoming_volume * manual_minutes_per_record / 60
+  hybrid_labor_hours:
+    expression: (auto_records * ai_seconds_per_record / 3600) + (review_records * review_minutes_per_record / 60) + (exception_records * escalation_minutes_per_record / 60) + (manual_records * manual_minutes_per_record / 60) + (hold_records * hold_minutes_per_record / 60)
+  baseline_labor_cost:
+    expression: baseline_labor_hours * labor_cost_per_hour
+  hybrid_labor_cost:
+    expression: hybrid_labor_hours * labor_cost_per_hour
+  expected_error_cost:
+    expression: incoming_volume * residual_error_rate * error_cost_per_record
+  monthly_net_value:
+    expression: baseline_labor_cost - hybrid_labor_cost - expected_error_cost - monthly_tool_cost
+
+rules:
+  - id: insufficient-system-fit
+    priority: 1000
+    when:
+      any:
+        hold_share:
+          gte: 0.35
+        rule_clarity:
+          lt: 0.5
+    classify_as: hold
+    hold:
+      code: AUTOMATION_CONTEXT_INSUFFICIENT
+
+  - id: high-impact-or-exception-heavy
+    priority: 900
+    when:
+      any:
+        external_impact:
+          eq: high
+        escalate_share:
+          gte: 0.18
+        residual_error_rate:
+          gte: 0.05
+    classify_as: escalate
+
+  - id: automation-not-economic
+    priority: 800
+    when:
+      any:
+        monthly_net_value:
+          lte: 0
+        manual_share:
+          gte: 0.30
+        review_utilization:
+          gt: 2.0
+    classify_as: manual
+
+  - id: safe-auto-route
+    priority: 700
+    when:
+      all:
+        external_impact:
+          eq: low
+        auto_share:
+          gte: 0.55
+        residual_error_rate:
+          lte: 0.02
+        review_utilization:
+          lte: 1.0
+        monthly_net_value:
+          gt: 0
+    classify_as: auto
+
+  - id: controlled-review-route
+    priority: 600
+    when:
+      all:
+        controlled_share:
+          gte: 0.60
+        review_utilization:
+          lte: 1.5
+        monthly_net_value:
+          gt: 0
+    classify_as: review
+
+  - id: manual-default
+    priority: 100
+    when:
+      default: true
+    classify_as: manual
+
+resolution:
+  strategy: first_match
+  order: priority_descending
+
+interpretation:
+  confidence: low
+  confidence_reason:
+    en: The result uses declared ranges rather than measured production traffic, exception handling, and error costs.
+    ja: 実運用の処理量、例外処理、誤りコストではなく、宣言された可変域で試しているためです。
+  verdicts:
+    - id: controlled_automation_signal
+      priority: 300
+      label:
+        en: Controlled automation signal
+        ja: 管理された自動化の可能性
+      when:
+        all:
+          controlled_automation_rate:
+            gte: 0.60
+          auto_ready_rate:
+            gte: 0.15
+      message:
+        en: A guarded PoC can test automatic processing while retaining review and escalation routes.
+        ja: REVIEWとESCALATEを残したまま、自動処理を試すPoCへ進めます。
+    - id: ai_assisted_poc_signal
+      priority: 200
+      label:
+        en: AI-assisted PoC signal
+        ja: AI支援PoCの可能性
+      when:
+        ai_assisted_rate:
+          gte: 0.55
+      message:
+        en: Start with AI-assisted routing and human review before attempting full automation.
+        ja: 完全自動化より先に、AIによる振り分けと人間確認から始めるべきです。
+    - id: measure_before_automation
+      priority: 100
+      label:
+        en: Measure before automation
+        ja: 自動化前に計測
+      when:
+        default: true
+      message:
+        en: The workflow needs narrower conditions or measured operating data before an automation PoC.
+        ja: 自動化PoCの前に、対象を絞るか実運用データを追加する必要があります。
+
+automation_receipt:
+  allocation_metrics:
+    auto: auto_share
+    review: review_share
+    escalate: escalate_share
+    hold: hold_share
+    manual: manual_share
+  operating_mode_classes:
+    auto: [auto]
+    review: [review]
+    escalate: [escalate]
+    hold: [hold]
+    manual: [manual]
+  headline_metrics:
+    monthly_net_value: monthly_net_value
+    review_utilization: review_utilization
+    residual_error_rate: residual_error_rate
+    baseline_labor_hours: baseline_labor_hours
+    hybrid_labor_hours: hybrid_labor_hours
+  bottlenecks:
+    - id: system_compatibility
+      priority: 500
+      when:
+        hold_share_mean:
+          gte: 0.25
+      label:
+        en: System compatibility and missing inputs
+        ja: システム互換性と入力不足
+      reason:
+        en: Too much work cannot enter the automated path and remains on HOLD.
+        ja: 自動経路へ入れない作業が多く、HOLDとして残ります。
+      action:
+        en: Standardize input formats and enumerate missing permissions and fields.
+        ja: 入力形式を標準化し、不足項目と権限を列挙する。
+    - id: human_review_capacity
+      priority: 400
+      when:
+        review_utilization_mean:
+          gte: 1.0
+      label:
+        en: Human review capacity
+        ja: 人間確認の処理能力
+      reason:
+        en: Review demand is equal to or greater than available human capacity.
+        ja: 確認需要が、人間の処理能力と同等以上になっています。
+      action:
+        en: Narrow the automatic scope or review only low-confidence records.
+        ja: 自動化対象を絞るか、低信頼案件だけを人間確認へ送る。
+    - id: exception_density
+      priority: 300
+      when:
+        escalate_share_mean:
+          gte: 0.15
+      label:
+        en: Exception density
+        ja: 例外密度
+      reason:
+        en: Too many records require specialist handling instead of ordinary review.
+        ja: 通常確認ではなく専門対応が必要な案件が多すぎます。
+      action:
+        en: Separate frequent exception families into dedicated rules and packages.
+        ja: 頻出例外を種類別に分け、専用ルールとPackageを作る。
+    - id: weak_economics
+      priority: 200
+      when:
+        monthly_net_value_mean:
+          lte: 0
+      label:
+        en: Weak operating economics
+        ja: 運用採算
+      reason:
+        en: Tooling, review, and expected error costs consume the labor savings.
+        ja: ツール費、確認費、想定誤りコストが削減効果を上回ります。
+      action:
+        en: Reduce scope and compare against a measured manual baseline.
+        ja: 対象を絞り、実測した手作業ベースラインと比較する。
+    - id: residual_uncertainty
+      priority: 100
+      when:
+        default: true
+      label:
+        en: Residual decision uncertainty
+        ja: 判断上の残余不確実性
+      reason:
+        en: No single operating constraint dominates the aggregate result.
+        ja: 集計結果を支配する単一の制約がまだ見えていません。
+      action:
+        en: Measure the top decisive variables in a small live sample.
+        ja: 決定力の高い変数を、小さな実データで計測する。
+  poc_recommendations:
+    - id: guarded-auto-poc
+      priority: 400
+      when:
+        all:
+          auto_allocation_rate:
+            gte: 0.40
+          hold_allocation_rate:
+            lte: 0.20
+          residual_error_rate_mean:
+            lte: 0.03
+          monthly_net_value_mean:
+            gt: 0
+          auto_mode_rate:
+            gte: 0.10
+      scope:
+        en: Automatically process low-risk, high-confidence records; review everything else.
+        ja: 低リスクかつ高信頼の案件だけを自動処理し、残りは人間確認へ送る。
+      reason:
+        en: A meaningful automatic share appears while the residual error and HOLD share remain bounded.
+        ja: 自動処理可能量が見え、残余誤りとHOLDも限定されています。
+      guardrails:
+        - en: Keep a kill switch and full Action Receipts.
+          ja: 停止スイッチと完全なAction Receiptを残す。
+        - en: Do not auto-process high-impact exceptions.
+          ja: 高影響の例外案件は自動処理しない。
+        - en: Recheck accuracy after every rule or source-format change.
+          ja: ルールや入力形式の変更後は精度を再確認する。
+    - id: review-first-poc
+      priority: 300
+      when:
+        all:
+          controlled_share_mean:
+            gte: 0.60
+          hold_allocation_rate:
+            lte: 0.30
+          monthly_net_value_mean:
+            gt: 0
+      scope:
+        en: Let AI extract and classify, but require human approval before completion.
+        ja: AIに抽出と分類をさせるが、完了前に必ず人間承認を入れる。
+      reason:
+        en: AI assistance appears useful, but the automatic boundary is not yet stable enough.
+        ja: AI支援は有効ですが、自動処理境界はまだ安定していません。
+      guardrails:
+        - en: Measure disagreement and correction reasons.
+          ja: 不一致率と修正理由を計測する。
+        - en: Route unknown patterns to HOLD rather than guessing.
+          ja: 未知パターンは推測せずHOLDへ送る。
+    - id: classification-only-poc
+      priority: 200
+      when:
+        ai_assisted_share_mean:
+          gte: 0.45
+      scope:
+        en: Use AI only for triage and queue ordering; keep execution manual.
+        ja: AIは一次分類と処理順の決定だけに使い、実行は手作業のままにする。
+      reason:
+        en: The workflow has useful classification structure but not enough evidence for execution automation.
+        ja: 分類構造は使えますが、実行自動化の証拠は不足しています。
+      guardrails:
+        - en: Do not change records automatically.
+          ja: レコードを自動変更しない。
+    - id: measure-first
+      priority: 100
+      when:
+        default: true
+      scope:
+        en: Measure volume, exception families, review time, and error cost before automation.
+        ja: 自動化前に、処理量、例外種類、確認時間、誤りコストを計測する。
+      reason:
+        en: The declared ranges do not yet support a safe and economic PoC boundary.
+        ja: 宣言された可変域だけでは、安全で採算の合うPoC境界を作れません。
+      guardrails:
+        - en: Keep the current manual route until the baseline is measured.
+          ja: ベースライン計測までは現行の手作業経路を維持する。
+
+on_evaluation_error:
+  status: held
+  classify_as: hold
+  hold:
+    code: EVALUATION_ERROR
