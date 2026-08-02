@@ -1,0 +1,907 @@
+{
+  "receipt_id": "sim-20260801T013837Z-3b4d402c",
+  "created_at": "2026-08-01T01:38:37.801579Z",
+  "project": {
+    "name": "月次データ入力業務のAI自動化",
+    "plain_description": "複数のCSVと帳票から項目を抽出し、基幹システムへ登録する月次業務について、 AI、自動処理、人間確認、専門担当、HOLD、手作業の配分を試します。\n",
+    "target_users": [
+      "業務責任者",
+      "AI導入担当",
+      "データ入力担当"
+    ],
+    "business_model": "AI自動化PoC設計",
+    "language": "ja",
+    "current_stage": "assessable"
+  },
+  "question": "このデータ入力業務は、どこまでAIで自動化でき、どこに人間確認・専門対応・HOLDを残すべきか。\n",
+  "answer": {
+    "verdict_code": "measure_before_automation",
+    "verdict": "自動化PoCの前に、対象を絞るか実運用データを追加する必要があります。",
+    "success_score": 24.41,
+    "success_label": "自動化前に計測",
+    "likely_outcome": {
+      "class_id": "hold",
+      "plain_label": "必要な文脈または互換性が不足している",
+      "ratio": 0.553
+    },
+    "confidence": "low",
+    "confidence_reason": "実運用の処理量、例外処理、誤りコストではなく、宣言された可変域で試しているためです。"
+  },
+  "plain_summary": [
+    "複数のCSVと帳票から項目を抽出し、基幹システムへ登録する月次業務について、 AI、自動処理、人間確認、専門担当、HOLD、手作業の配分を試します。\n",
+    "平均作業配分はAUTO 36%、REVIEW 15%、ESCALATE 10%、HOLD 35%、MANUAL 4%です。",
+    "条件世界全体で最も多い運用モードは「HOLD」です。",
+    "主なボトルネックは「システム互換性と入力不足」です。",
+    "推奨PoCは「AIは一次分類と処理順の決定だけに使い、実行は手作業のままにする。」です。",
+    "次にすることは「AIの出力と人間修正理由を記録する小規模PoCを行う。」です。",
+    "初期情報の状態はREADY、モデル信頼Proxyは79%、平均可変域縮小率は84%です。"
+  ],
+  "outcomes": {
+    "auto": {
+      "plain_label": "安全な自動処理が成立し得る",
+      "kind": "success",
+      "score": 100.0,
+      "count": 0,
+      "ratio": 0.0
+    },
+    "review": {
+      "plain_label": "AI処理と人間確認の組み合わせが成立し得る",
+      "kind": "success",
+      "score": 82.0,
+      "count": 0,
+      "ratio": 0.0
+    },
+    "escalate": {
+      "plain_label": "専門担当へのエスカレーションが中心になる",
+      "kind": "intermediate",
+      "score": 55.0,
+      "count": 94,
+      "ratio": 0.047
+    },
+    "hold": {
+      "plain_label": "必要な文脈または互換性が不足している",
+      "kind": "hold",
+      "score": 25.0,
+      "count": 1106,
+      "ratio": 0.553
+    },
+    "manual": {
+      "plain_label": "手作業の方が安全または安価",
+      "kind": "failure",
+      "score": 20.0,
+      "count": 800,
+      "ratio": 0.4
+    }
+  },
+  "funnel": [
+    {
+      "id": "assessable",
+      "label": "条件を照合して運用判断できる",
+      "count": 894,
+      "ratio": 0.447,
+      "drop_from_previous": 0.5529999999999999
+    },
+    {
+      "id": "ai_assisted",
+      "label": "AIを分類・抽出・振り分けに使える",
+      "count": 94,
+      "ratio": 0.047,
+      "drop_from_previous": 0.4
+    },
+    {
+      "id": "controlled_automation",
+      "label": "AUTOまたはREVIEW経路で管理できる",
+      "count": 0,
+      "ratio": 0.0,
+      "drop_from_previous": 0.047
+    },
+    {
+      "id": "auto_ready",
+      "label": "限定的な自動完了が成立する",
+      "count": 0,
+      "ratio": 0.0,
+      "drop_from_previous": 0.0
+    }
+  ],
+  "main_risk": {
+    "class_id": "manual",
+    "plain_label": "手作業の方が安全または安価",
+    "ratio": 0.4,
+    "response": "対象を絞るか、手作業を改善するか、低価値な複雑性を除いてから再試行する。"
+  },
+  "next_action": {
+    "stage_id": "ai_assisted",
+    "stage_label": "AIを分類・抽出・振り分けに使える",
+    "action": "AIの出力と人間修正理由を記録する小規模PoCを行う。",
+    "reason": "現在地は「条件を照合して運用判断できる」です。次の未確認段階は「AIを分類・抽出・振り分けに使える」で、シミュレーションでは5%の条件が到達しました。"
+  },
+  "decisive_variables": [
+    {
+      "variable": "system_compatibility",
+      "correlation": -0.08024,
+      "direction": "negative"
+    },
+    {
+      "variable": "ai_seconds_per_record",
+      "correlation": -0.073484,
+      "direction": "negative"
+    },
+    {
+      "variable": "rule_clarity",
+      "correlation": -0.039353,
+      "direction": "negative"
+    },
+    {
+      "variable": "labor_cost_per_hour",
+      "correlation": 0.037088,
+      "direction": "positive"
+    },
+    {
+      "variable": "monthly_tool_cost",
+      "correlation": -0.03514,
+      "direction": "negative"
+    }
+  ],
+  "safety_net": {
+    "enabled": true,
+    "total_loss_avoided": true,
+    "reusable_patterns": [
+      {
+        "pattern_id": "evidence_hold",
+        "source_classes": [
+          "hold"
+        ],
+        "observed_ratio": 0.553
+      },
+      {
+        "pattern_id": "input_standardization_gap",
+        "source_classes": [
+          "hold"
+        ],
+        "observed_ratio": 0.553
+      },
+      {
+        "pattern_id": "permission_gap",
+        "source_classes": [
+          "hold"
+        ],
+        "observed_ratio": 0.553
+      },
+      {
+        "pattern_id": "automation_not_economic",
+        "source_classes": [
+          "manual"
+        ],
+        "observed_ratio": 0.4
+      },
+      {
+        "pattern_id": "residual_manual_work",
+        "source_classes": [
+          "manual"
+        ],
+        "observed_ratio": 0.4
+      },
+      {
+        "pattern_id": "review_capacity_bottleneck",
+        "source_classes": [
+          "manual"
+        ],
+        "observed_ratio": 0.4
+      }
+    ],
+    "transfer_candidates": [
+      {
+        "domain": "legacy_system_migration",
+        "source_classes": [
+          "hold"
+        ],
+        "observed_ratio": 0.553
+      },
+      {
+        "domain": "multi_source_data_integration",
+        "source_classes": [
+          "hold"
+        ],
+        "observed_ratio": 0.553
+      },
+      {
+        "domain": "validation_workflows",
+        "source_classes": [
+          "hold"
+        ],
+        "observed_ratio": 0.553
+      },
+      {
+        "domain": "form_simplification",
+        "source_classes": [
+          "manual"
+        ],
+        "observed_ratio": 0.4
+      },
+      {
+        "domain": "process_redesign",
+        "source_classes": [
+          "manual"
+        ],
+        "observed_ratio": 0.4
+      },
+      {
+        "domain": "queue_management",
+        "source_classes": [
+          "manual"
+        ],
+        "observed_ratio": 0.4
+      },
+      {
+        "domain": "staffing_and_capacity",
+        "source_classes": [
+          "manual"
+        ],
+        "observed_ratio": 0.4
+      }
+    ],
+    "next_package_candidates": [
+      {
+        "id": "compatibility-inventory",
+        "source_class": "hold",
+        "source_ratio": 0.553,
+        "question": "どの形式、項目、権限、元システムが自動化経路への投入を妨げているか。",
+        "reason": "HOLDを行き止まりにせず、互換性と証拠の棚卸しへ変換できます。"
+      },
+      {
+        "id": "narrow-scope-redesign",
+        "source_class": "manual",
+        "source_ratio": 0.4,
+        "question": "業務全体から分離したとき、採算が合う最小の均質部分はどこか。",
+        "reason": "自動化失敗から、単純化または分離すべき業務部分を抽出できます。"
+      }
+    ],
+    "civilizational_yield_proxy": {
+      "status": "proxy_only",
+      "marginal_yield_status": "not_computed",
+      "uncertainty_reduction": 0.757451,
+      "reusable_pattern_count": 6,
+      "transfer_domain_count": 7,
+      "next_option_count": 2,
+      "warning": "これは配分用Proxyであり、文明的価値の直接測定ではありません。限界利回りには親Receiptと子Receiptの比較が必要です。"
+    },
+    "expansion": {
+      "decision": "continue",
+      "reason": "このReceiptから、次Package候補が2件残っています。"
+    }
+  },
+  "evidence": {
+    "level": "historical_replay",
+    "pack_id": "data-entry-evidence-2026q2",
+    "pack_version": "0.1.0",
+    "runs": 2000,
+    "seed": 42,
+    "warning": "この成功度は現実の市場確率ではありません。入力された仮定と分類ルールの中で、2,000通りを試した結果です。"
+  },
+  "data_quality": {
+    "readiness_status": "ready",
+    "evidence_count": 9,
+    "referenced_evidence_count": 9,
+    "evidence_coverage": 0.6,
+    "evidence_reliability": 0.853333,
+    "variable_calibration": 1.0,
+    "model_confidence": 0.786951,
+    "outcome_stability_proxy": 0.757451,
+    "mean_range_reduction": 0.839484,
+    "unresolved_variables": [],
+    "calibration_report": {
+      "incoming_volume": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-volume"
+        ],
+        "used_evidence_refs": [
+          "ev-volume"
+        ],
+        "evidence_count": 6,
+        "confidence": "high",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 1000.0,
+          "max": 5000.0,
+          "width": 4000.0
+        },
+        "effective_bounds": {
+          "min": 2762.0,
+          "max": 3338.0,
+          "width": 576.0
+        },
+        "range_reduction_ratio": 0.856,
+        "effective_distribution": "integer_uniform"
+      },
+      "system_compatibility": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-compatibility"
+        ],
+        "used_evidence_refs": [
+          "ev-compatibility"
+        ],
+        "evidence_count": 5,
+        "confidence": "high",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 0.45,
+          "max": 0.98,
+          "width": 0.53
+        },
+        "effective_bounds": {
+          "min": 0.611,
+          "max": 0.6890000000000001,
+          "width": 0.07800000000000007
+        },
+        "range_reduction_ratio": 0.85283,
+        "effective_distribution": "uniform"
+      },
+      "exception_rate": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-exceptions"
+        ],
+        "used_evidence_refs": [
+          "ev-exceptions"
+        ],
+        "evidence_count": 5,
+        "confidence": "high",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 0.02,
+          "max": 0.25,
+          "width": 0.23
+        },
+        "effective_bounds": {
+          "min": 0.134,
+          "max": 0.186,
+          "width": 0.05199999999999999
+        },
+        "range_reduction_ratio": 0.773913,
+        "effective_distribution": "uniform"
+      },
+      "ai_accuracy": {
+        "status": "applied",
+        "method": "mean_std",
+        "evidence_refs": [
+          "ev-ai-accuracy"
+        ],
+        "used_evidence_refs": [
+          "ev-ai-accuracy"
+        ],
+        "evidence_count": 5,
+        "confidence": "medium",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 0.84,
+          "max": 0.995,
+          "width": 0.15500000000000003
+        },
+        "effective_bounds": {
+          "min": 0.9026393202250022,
+          "max": 0.9473606797749979,
+          "width": 0.04472135954999579
+        },
+        "range_reduction_ratio": 0.711475,
+        "effective_distribution": "normal"
+      },
+      "rule_clarity": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.45,
+          "max": 0.98,
+          "width": 0.53
+        },
+        "effective_bounds": {
+          "min": 0.45,
+          "max": 0.98,
+          "width": 0.53
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "human_review_capacity": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-review-capacity"
+        ],
+        "used_evidence_refs": [
+          "ev-review-capacity"
+        ],
+        "evidence_count": 4,
+        "confidence": "high",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 100.0,
+          "max": 1200.0,
+          "width": 1100.0
+        },
+        "effective_bounds": {
+          "min": 505.0,
+          "max": 565.0,
+          "width": 60.0
+        },
+        "range_reduction_ratio": 0.945455,
+        "effective_distribution": "integer_uniform"
+      },
+      "manual_minutes_per_record": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-manual-time"
+        ],
+        "used_evidence_refs": [
+          "ev-manual-time"
+        ],
+        "evidence_count": 5,
+        "confidence": "high",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 1.5,
+          "max": 5.0,
+          "width": 3.5
+        },
+        "effective_bounds": {
+          "min": 2.75,
+          "max": 3.3499999999999996,
+          "width": 0.5999999999999996
+        },
+        "range_reduction_ratio": 0.828571,
+        "effective_distribution": "uniform"
+      },
+      "review_minutes_per_record": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-review-time"
+        ],
+        "used_evidence_refs": [
+          "ev-review-time"
+        ],
+        "evidence_count": 5,
+        "confidence": "high",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 0.5,
+          "max": 2.5,
+          "width": 2.0
+        },
+        "effective_bounds": {
+          "min": 0.97,
+          "max": 1.33,
+          "width": 0.3600000000000001
+        },
+        "range_reduction_ratio": 0.82,
+        "effective_distribution": "uniform"
+      },
+      "escalation_minutes_per_record": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 4.0,
+          "max": 15.0,
+          "width": 11.0
+        },
+        "effective_bounds": {
+          "min": 4.0,
+          "max": 15.0,
+          "width": 11.0
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "hold_minutes_per_record": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.3,
+          "max": 2.0,
+          "width": 1.7
+        },
+        "effective_bounds": {
+          "min": 0.3,
+          "max": 2.0,
+          "width": 1.7
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "ai_seconds_per_record": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 0.2,
+          "max": 3.0,
+          "width": 2.8
+        },
+        "effective_bounds": {
+          "min": 0.2,
+          "max": 3.0,
+          "width": 2.8
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "labor_cost_per_hour": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-labor-cost"
+        ],
+        "used_evidence_refs": [
+          "ev-labor-cost"
+        ],
+        "evidence_count": 3,
+        "confidence": "medium",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 1800.0,
+          "max": 4500.0,
+          "width": 2700.0
+        },
+        "effective_bounds": {
+          "min": 2480.0,
+          "max": 2720.0,
+          "width": 240.0
+        },
+        "range_reduction_ratio": 0.911111,
+        "effective_distribution": "uniform"
+      },
+      "error_cost_per_record": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": {
+          "min": 200.0,
+          "max": 8000.0,
+          "width": 7800.0
+        },
+        "effective_bounds": {
+          "min": 200.0,
+          "max": 8000.0,
+          "width": 7800.0
+        },
+        "range_reduction_ratio": 0.0
+      },
+      "monthly_tool_cost": {
+        "status": "applied",
+        "method": "observed_range",
+        "evidence_refs": [
+          "ev-tool-cost"
+        ],
+        "used_evidence_refs": [
+          "ev-tool-cost"
+        ],
+        "evidence_count": 3,
+        "confidence": "medium",
+        "missing_policy": "widen_range",
+        "declared_bounds": {
+          "min": 50000.0,
+          "max": 300000.0,
+          "width": 250000.0
+        },
+        "effective_bounds": {
+          "min": 117000.0,
+          "max": 153000.0,
+          "width": 36000.0
+        },
+        "range_reduction_ratio": 0.856,
+        "effective_distribution": "integer_uniform"
+      },
+      "external_impact": {
+        "status": "not_requested",
+        "method": "none",
+        "evidence_refs": [],
+        "evidence_count": 0,
+        "confidence": "low",
+        "missing_policy": "continue_with_warning",
+        "declared_bounds": null,
+        "effective_bounds": null,
+        "range_reduction_ratio": 0.0
+      }
+    },
+    "warnings": [],
+    "interpretation": "More evidence improves this Receipt only by calibrating variable ranges and distributions; it does not add points directly."
+  },
+  "workload_result": {
+    "manifest_id": "automation-workflow-monte-carlo",
+    "manifest_version": "0.1.0",
+    "target_runs": 2000,
+    "selected_runs": 2000,
+    "within_declared_range": true,
+    "resource": {
+      "cpu": "preferred",
+      "gpu": "optional",
+      "memory_gb": 4
+    },
+    "execution": {
+      "interruptible": true,
+      "checkpointable": true,
+      "resumable": true,
+      "divisible": true
+    },
+    "expansion": {
+      "allowed": true,
+      "max_depth": 4,
+      "stop_when_range_reduction_below": 0.01
+    }
+  },
+  "metric_summaries": {
+    "auto_share": {
+      "count": 2000,
+      "min": 0.21256888612039762,
+      "mean": 0.36195546167681797,
+      "median": 0.3608427204223287,
+      "max": 0.537077682292877
+    },
+    "review_share": {
+      "count": 2000,
+      "min": 0.04646638740708681,
+      "mean": 0.14562696870265285,
+      "median": 0.1628909090529067,
+      "max": 0.20302375809935205
+    },
+    "escalate_share": {
+      "count": 2000,
+      "min": 0.08265804663977594,
+      "mean": 0.10385362965474536,
+      "median": 0.10358812593171668,
+      "max": 0.12732904038849613
+    },
+    "hold_share": {
+      "count": 2000,
+      "min": 0.31103880382693067,
+      "mean": 0.3505755708789812,
+      "median": 0.35099070313526054,
+      "max": 0.38899598158222215
+    },
+    "manual_share": {
+      "count": 2000,
+      "min": 0.0,
+      "mean": 0.03798836908680261,
+      "median": 0.008309554829696468,
+      "max": 0.1833123674796125
+    },
+    "controlled_share": {
+      "count": 2000,
+      "min": 0.3805064964471026,
+      "mean": 0.5075824303794708,
+      "median": 0.520029213096757,
+      "max": 0.5960479106842673
+    },
+    "ai_assisted_share": {
+      "count": 2000,
+      "min": 0.4699023023385748,
+      "mean": 0.6114360600342162,
+      "median": 0.6227763286997318,
+      "max": 0.6889611961730693
+    },
+    "review_utilization": {
+      "count": 2000,
+      "min": 0.25146904956089905,
+      "mean": 1.0482003758897436,
+      "median": 1.046156591741386,
+      "max": 2.1331379875366974
+    },
+    "residual_error_rate": {
+      "count": 2000,
+      "min": 0.012240083691985332,
+      "mean": 0.027105517438650185,
+      "median": 0.026541040109489,
+      "max": 0.048770351226605335
+    },
+    "baseline_labor_hours": {
+      "count": 2000,
+      "min": 127.78920478017267,
+      "mean": 154.87392834397397,
+      "median": 154.4763898237241,
+      "max": 185.5101910755225
+    },
+    "hybrid_labor_hours": {
+      "count": 2000,
+      "min": 29.97103016617004,
+      "mean": 86.20107543279373,
+      "median": 85.36826577836806,
+      "max": 163.83865935922552
+    },
+    "baseline_labor_cost": {
+      "count": 2000,
+      "min": 320226.2853076071,
+      "mean": 402604.7242692153,
+      "median": 401021.6626923028,
+      "max": 498318.0623019003
+    },
+    "hybrid_labor_cost": {
+      "count": 2000,
+      "min": 77415.6380279592,
+      "mean": 224090.0198711882,
+      "median": 221760.50446920405,
+      "max": 438379.2552091276
+    },
+    "expected_error_cost": {
+      "count": 2000,
+      "min": 8781.30572344363,
+      "mean": 136719.56483108943,
+      "median": 97588.16262924658,
+      "max": 1136071.2112447717
+    },
+    "monthly_net_value": {
+      "count": 2000,
+      "min": -1140200.2334709421,
+      "mean": -93359.5249330624,
+      "median": -68774.77869015824,
+      "max": 201862.47051618056
+    }
+  },
+  "holds": [
+    {
+      "code": "AUTOMATION_CONTEXT_INSUFFICIENT",
+      "count": 1106
+    }
+  ],
+  "provenance": {
+    "runner_version": "0.5.0",
+    "input_digest": "sha256:0e998d641693eb53d29fe145d914f05562496f43736e08aa5abc200148529721",
+    "taxonomy_digest": "sha256:fe6295d1c4b3f1f5b93236d69a85b517ecb0b5940cd3a22bc89f4b2ed9864c6e",
+    "evaluator_digest": "sha256:d7ea0bdde6c17d17898c7f9156fba0a7e46c9efa2acfdd5295bc1a2cac1b1281",
+    "effective_variables_digest": "sha256:1e751845b17452b80445a3af64f18e8e5f3524adcbfe565e19424724889adb5a"
+  },
+  "automation_result": {
+    "workflow": {
+      "name": "月次データ入力と基幹登録",
+      "description": "CSVと帳票から必要項目を抽出し、形式確認後に基幹システムへ登録する。",
+      "unit_of_work": "1レコード",
+      "risk_level": "medium",
+      "current_process": "担当者が全件を目視し、Excelで整形してから基幹システムへ手入力する。"
+    },
+    "work_allocation": {
+      "auto": {
+        "metric": "auto_share",
+        "min": 0.21256888612039762,
+        "mean": 0.36195546167681797,
+        "median": 0.3608427204223287,
+        "max": 0.537077682292877
+      },
+      "review": {
+        "metric": "review_share",
+        "min": 0.04646638740708681,
+        "mean": 0.14562696870265285,
+        "median": 0.1628909090529067,
+        "max": 0.20302375809935205
+      },
+      "escalate": {
+        "metric": "escalate_share",
+        "min": 0.08265804663977594,
+        "mean": 0.10385362965474536,
+        "median": 0.10358812593171668,
+        "max": 0.12732904038849613
+      },
+      "hold": {
+        "metric": "hold_share",
+        "min": 0.31103880382693067,
+        "mean": 0.3505755708789812,
+        "median": 0.35099070313526054,
+        "max": 0.38899598158222215
+      },
+      "manual": {
+        "metric": "manual_share",
+        "min": 0.0,
+        "mean": 0.03798836908680261,
+        "median": 0.008309554829696468,
+        "max": 0.1833123674796125
+      }
+    },
+    "allocation_mean_total": 1.0,
+    "operating_mode_distribution": {
+      "auto": {
+        "classes": [
+          "auto"
+        ],
+        "count": 0,
+        "ratio": 0.0
+      },
+      "review": {
+        "classes": [
+          "review"
+        ],
+        "count": 0,
+        "ratio": 0.0
+      },
+      "escalate": {
+        "classes": [
+          "escalate"
+        ],
+        "count": 94,
+        "ratio": 0.047
+      },
+      "hold": {
+        "classes": [
+          "hold"
+        ],
+        "count": 1106,
+        "ratio": 0.553
+      },
+      "manual": {
+        "classes": [
+          "manual"
+        ],
+        "count": 800,
+        "ratio": 0.4
+      }
+    },
+    "headline_metrics": {
+      "monthly_net_value": {
+        "metric": "monthly_net_value",
+        "min": -1140200.2334709421,
+        "mean": -93359.5249330624,
+        "median": -68774.77869015824,
+        "max": 201862.47051618056
+      },
+      "review_utilization": {
+        "metric": "review_utilization",
+        "min": 0.25146904956089905,
+        "mean": 1.0482003758897436,
+        "median": 1.046156591741386,
+        "max": 2.1331379875366974
+      },
+      "residual_error_rate": {
+        "metric": "residual_error_rate",
+        "min": 0.012240083691985332,
+        "mean": 0.027105517438650185,
+        "median": 0.026541040109489,
+        "max": 0.048770351226605335
+      },
+      "baseline_labor_hours": {
+        "metric": "baseline_labor_hours",
+        "min": 127.78920478017267,
+        "mean": 154.87392834397397,
+        "median": 154.4763898237241,
+        "max": 185.5101910755225
+      },
+      "hybrid_labor_hours": {
+        "metric": "hybrid_labor_hours",
+        "min": 29.97103016617004,
+        "mean": 86.20107543279373,
+        "median": 85.36826577836806,
+        "max": 163.83865935922552
+      }
+    },
+    "bottleneck": {
+      "code": "system_compatibility",
+      "label": "システム互換性と入力不足",
+      "reason": "自動経路へ入れない作業が多く、HOLDとして残ります。",
+      "action": "入力形式を標準化し、不足項目と権限を列挙する。"
+    },
+    "recommended_poc": {
+      "id": "classification-only-poc",
+      "scope": "AIは一次分類と処理順の決定だけに使い、実行は手作業のままにする。",
+      "reason": "分類構造は使えますが、実行自動化の証拠は不足しています。",
+      "guardrails": [
+        "レコードを自動変更しない。"
+      ]
+    },
+    "warning": "作業配分は各条件世界で算出した比率の平均です。運用モード分布は、条件世界全体をAUTO等へ分類した割合であり、同じ％ではありません。"
+  }
+}
