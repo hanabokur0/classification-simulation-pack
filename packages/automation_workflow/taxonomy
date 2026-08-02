@@ -1,0 +1,144 @@
+id: automation_workflow_taxonomy
+version: 0.4.0
+package_id: automation_workflow
+classes:
+  - id: auto
+    plain_label:
+      en: Safe automatic processing is plausible
+      ja: 安全な自動処理が成立し得る
+    description: Low-risk, high-confidence work can complete automatically inside declared guardrails.
+    kind: success
+    score: 100
+    response:
+      en: Start a guarded PoC on low-risk records and retain review, escalation, and rollback.
+      ja: 低リスク案件で限定PoCを始め、確認・エスカレーション・切り戻しを残す。
+    reusable_patterns:
+      - high_confidence_straight_through_processing
+      - guarded_automation_boundary
+      - receipt_verified_execution
+    transfer_domains:
+      - document_extraction
+      - routine_data_entry
+      - request_routing
+      - invoice_precheck
+    next_package:
+      id: guarded-auto-live-sample
+      question:
+        en: Does the automatic boundary remain safe on a small live sample?
+        ja: 小規模な実データでも、自動処理境界は安全に維持されるか。
+      reason:
+        en: A simulated automatic route should next be calibrated with reversible live work.
+        ja: シミュレーション上の自動経路を、切り戻し可能な実作業で校正できます。
+
+  - id: review
+    plain_label:
+      en: AI processing with human review is plausible
+      ja: AI処理と人間確認の組み合わせが成立し得る
+    description: AI can perform extraction or classification, while a human remains the completion gate.
+    kind: success
+    score: 82
+    response:
+      en: Run a review-first PoC and record every correction reason.
+      ja: 人間確認を必須にしたPoCを行い、修正理由をすべて記録する。
+    reusable_patterns:
+      - ai_human_review_loop
+      - confidence_based_routing
+      - correction_reason_capture
+    transfer_domains:
+      - customer_support_triage
+      - application_screening
+      - report_generation
+      - master_data_maintenance
+    next_package:
+      id: review-threshold-test
+      question:
+        en: Which confidence threshold minimizes review load without increasing costly errors?
+        ja: 高コストな誤りを増やさず、確認負荷を最小にする信頼度閾値はどこか。
+      reason:
+        en: Review outcomes can tune the boundary between AUTO and REVIEW.
+        ja: 確認結果から、AUTOとREVIEWの境界を調整できます。
+
+  - id: escalate
+    plain_label:
+      en: Specialist escalation must remain central
+      ja: 専門担当へのエスカレーションが中心になる
+    description: Exceptions or external impact are too large for ordinary automation or routine review.
+    kind: intermediate
+    score: 55
+    response:
+      en: Automate detection and routing, not the high-impact decision itself.
+      ja: 高影響の判断そのものではなく、検知と振り分けだけを自動化する。
+    reusable_patterns:
+      - specialist_exception_routing
+      - high_impact_guard
+      - exception_family_discovery
+    transfer_domains:
+      - compliance_review
+      - incident_triage
+      - contract_exception_handling
+      - complex_customer_support
+    next_package:
+      id: exception-family-split
+      question:
+        en: Which recurring exception families can be separated into safer dedicated routes?
+        ja: 頻出する例外のうち、より安全な専用経路へ分離できるものはどれか。
+      reason:
+        en: An escalation-heavy result still reveals reusable exception families and routing rules.
+        ja: エスカレーション中心でも、再利用可能な例外分類と経路を残せます。
+
+  - id: hold
+    plain_label:
+      en: Required context or compatibility is missing
+      ja: 必要な文脈または互換性が不足している
+    description: Inputs, permissions, formats, or operating rules are insufficient for a responsible automation judgment.
+    kind: hold
+    score: 25
+    response:
+      en: Standardize the inputs and list missing evidence before trying to automate execution.
+      ja: 実行自動化の前に、入力を標準化し、不足証拠を列挙する。
+    reusable_patterns:
+      - input_standardization_gap
+      - permission_gap
+      - evidence_hold
+    transfer_domains:
+      - legacy_system_migration
+      - multi_source_data_integration
+      - validation_workflows
+    next_package:
+      id: compatibility-inventory
+      question:
+        en: Which formats, fields, permissions, and source systems prevent the work from entering the automation route?
+        ja: どの形式、項目、権限、元システムが自動化経路への投入を妨げているか。
+      reason:
+        en: HOLD becomes a focused compatibility and evidence inventory rather than a dead end.
+        ja: HOLDを行き止まりにせず、互換性と証拠の棚卸しへ変換できます。
+
+  - id: manual
+    plain_label:
+      en: Manual processing remains safer or cheaper
+      ja: 手作業の方が安全または安価
+    description: Review overload, residual manual work, or weak economics makes automation unattractive under the declared conditions.
+    kind: failure
+    score: 20
+    response:
+      en: Narrow the scope, improve the manual baseline, or remove low-value complexity before another PoC.
+      ja: 対象を絞るか、手作業を改善するか、低価値な複雑性を除いてから再試行する。
+    reusable_patterns:
+      - automation_not_economic
+      - review_capacity_bottleneck
+      - residual_manual_work
+    transfer_domains:
+      - process_redesign
+      - queue_management
+      - staffing_and_capacity
+      - form_simplification
+    next_package:
+      id: narrow-scope-redesign
+      question:
+        en: Which smallest homogeneous subset becomes economic when isolated from the full workflow?
+        ja: 業務全体から分離したとき、採算が合う最小の均質部分はどこか。
+      reason:
+        en: A failed automation case can still identify the process segment worth simplifying or isolating.
+        ja: 自動化失敗から、単純化または分離すべき業務部分を抽出できます。
+
+fallback_class: hold
