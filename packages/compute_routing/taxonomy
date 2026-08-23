@@ -1,0 +1,115 @@
+id: compute_routing_taxonomy
+version: 0.1.0
+package_id: compute_routing
+classes:
+  - id: route
+    plain_label:
+      en: Direct remote routing is plausible
+      ja: 遠隔ノードへ直接ROUTEできる
+    description: A remote compute node satisfies the declared power, GPU, latency, and policy constraints with enough margin for direct placement.
+    kind: success
+    score: 100
+    response:
+      en: Route a reversible pilot workload to the selected remote candidate and record an execution Receipt.
+      ja: 選択された遠隔候補へ切り戻し可能な小規模ワークロードをROUTEし、実行Receiptを残す。
+    reusable_patterns:
+      - power_aware_compute_routing
+      - capacity_fit_before_dispatch
+      - reversible_remote_execution
+    transfer_domains:
+      - ai_batch_inference
+      - model_evaluation
+      - rendering
+      - scientific_compute
+    next_package:
+      id: live-node-capacity-check
+      question:
+        en: Does the selected node remain eligible when live grid, GPU, network, and thermal telemetry replace scenario ranges?
+        ja: 系統・GPU・ネットワーク・冷却の実測値へ置き換えても、選択ノードはROUTE可能か。
+      reason:
+        en: A direct simulated route should next be checked against fresh operational telemetry before execution.
+        ja: シミュレーション上の直接ROUTEは、実行前に最新の運用テレメトリで再検証する必要がある。
+
+  - id: shift
+    plain_label:
+      en: Time-shifted or partial remote routing is plausible
+      ja: 時間移動・分割によるSHIFTが成立し得る
+    description: Direct placement is not strong enough, but an interruptible, checkpointable, or divisible workload can plausibly move when capacity or power conditions improve.
+    kind: success
+    score: 82
+    response:
+      en: Queue the workload for a controlled shift window; preserve checkpoint, resume, and fallback-to-local paths.
+      ja: ワークロードを制御されたSHIFT待ちへ入れ、チェックポイント・再開・LOCAL退避経路を残す。
+    reusable_patterns:
+      - time_shifted_compute
+      - divisible_workload_routing
+      - checkpoint_resume_dispatch
+    transfer_domains:
+      - batch_inference
+      - fine_tuning
+      - offline_evaluation
+      - media_processing
+    next_package:
+      id: shift-window-calibration
+      question:
+        en: Which power-price, GPU-headroom, and thermal windows make SHIFT consistently preferable to LOCAL?
+        ja: どの電力価格・GPU余力・冷却条件なら、LOCALよりSHIFTが安定して有利になるか。
+      reason:
+        en: SHIFT value depends on temporal capacity, so the next step is to calibrate the available movement window.
+        ja: SHIFTの価値は時間帯ごとの余力に依存するため、移動可能時間帯を校正する。
+
+  - id: local
+    plain_label:
+      en: Keep the workload local under current constraints
+      ja: 現条件ではLOCAL維持が妥当
+    description: Local execution remains feasible and remote routing is disallowed, insufficiently advantageous, or incompatible with the declared workload constraints.
+    kind: intermediate
+    score: 65
+    response:
+      en: Keep execution local and measure the constraint preventing remote placement instead of forcing migration.
+      ja: 無理に移送せずLOCALで実行し、遠隔配置を妨げた制約を計測する。
+    reusable_patterns:
+      - local_fallback
+      - latency_guard
+      - data_residency_guard
+    transfer_domains:
+      - latency_sensitive_inference
+      - regulated_data_processing
+      - interactive_ai
+    next_package:
+      id: remote-blocker-inventory
+      question:
+        en: "Which single constraint most often blocks remote placement: latency, policy, power, GPU, or economics?"
+        ja: 遠隔配置を最も頻繁に止める制約は、遅延・ポリシー・電力・GPU・経済性のどれか。
+      reason:
+        en: LOCAL is a valid routing outcome, but repeated LOCAL decisions should expose the dominant blocker.
+        ja: LOCALは有効な判断だが、繰り返すなら支配的な阻害要因を抽出できる。
+
+  - id: hold
+    plain_label:
+      en: Routing context or feasible capacity is insufficient
+      ja: ルーティング情報または実行可能容量が不足
+    description: Required telemetry, authority, workload profile, or feasible node capacity is missing, so the router must not invent a destination.
+    kind: hold
+    score: 25
+    response:
+      en: Keep the workload on HOLD and collect the missing telemetry, authority, or capacity evidence.
+      ja: 宛先を推測せずHOLDし、不足しているテレメトリ・権限・容量証拠を取得する。
+    reusable_patterns:
+      - evidence_hold
+      - stale_telemetry_hold
+      - no_feasible_capacity
+    transfer_domains:
+      - capacity_planning
+      - multi_cloud_routing
+      - grid_aware_scheduling
+    next_package:
+      id: routing-evidence-refresh
+      question:
+        en: Which missing or stale field prevents a responsible routing decision?
+        ja: 責任あるルーティング判断を妨げている不足・陳腐化フィールドはどれか。
+      reason:
+        en: HOLD should become a concrete evidence request rather than a guessed placement.
+        ja: HOLDを推測配置ではなく、具体的な証拠取得要求へ変換する。
+
+fallback_class: hold
