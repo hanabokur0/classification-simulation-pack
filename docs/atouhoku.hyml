@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoPAS Power × Compute Router — Tohoku PoC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow+Condensed:wght@300;400;500;600;700;900&display=swap');
+:root{
+  --bg:#06040e;--bg2:#0c0820;--bg3:#100d28;--border:#1e1645;--accent:#7c3aed;
+  --green:#00f09a;--warn:#f0b800;--crit:#f03050;--elec:#c084fc;--cyan:#00c8f0;
+  --text:#d4c8f0;--textdim:#69578f;--mono:'Space Mono',monospace;--sans:'Barlow Condensed',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0} body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh}
+body:before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,58,237,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(124,58,237,.018) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+.shell{position:relative;z-index:2;max-width:1180px;margin:auto;padding:18px}
+header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:12px;flex-wrap:wrap}
+.sys{font:10px var(--mono);color:var(--textdim);letter-spacing:.16em;text-transform:uppercase}.name{font:700 22px var(--mono);color:var(--elec);letter-spacing:.05em}.hdr{font:9px/1.9 var(--mono);color:var(--textdim);text-align:right}.coord{color:var(--cyan);font-size:11px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;background:var(--green);box-shadow:0 0 5px var(--green)}
+.banner{font:9px/1.7 var(--mono);letter-spacing:.08em;color:var(--warn);border:1px solid rgba(240,184,0,.35);background:rgba(240,184,0,.05);padding:8px 11px;margin-bottom:12px}
+.card,.action{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:16px;position:relative;overflow:hidden}.card:before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--elec),transparent);opacity:.2}
+.action{padding:21px 23px;margin-bottom:12px;border-top:3px solid var(--elec)}.action.route{border-top-color:var(--green)}.action.shift{border-top-color:var(--warn)}.action.hold{border-top-color:var(--crit)}.action.local{border-top-color:var(--cyan)}
+.clabel{font:9px var(--mono);color:var(--textdim);letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px}.ctitle{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--elec);text-transform:uppercase;margin-bottom:12px}
+.action-verb{font-size:58px;font-weight:900;line-height:.92;color:var(--green)}.action-sub{font-size:17px;margin-top:6px}.reason{font:10px/1.9 var(--mono);color:var(--textdim);border-top:1px solid var(--border);margin-top:13px;padding-top:11px}.meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:11px}.meta>div{font:9px var(--mono);color:var(--textdim)}.meta strong{display:block;font-size:14px;color:var(--text);margin-top:2px}
+.flow{display:grid;grid-template-columns:.75fr 42px 1.6fr;gap:10px;align-items:stretch;margin-bottom:12px}.sourcebox{display:flex;flex-direction:column;justify-content:center;background:var(--bg3);border:1px solid var(--border);padding:14px}.sourcebox .big{font:700 40px var(--mono);color:var(--crit)}.arrow{display:flex;align-items:center;justify-content:center;color:var(--elec);font:700 24px var(--mono)}
+.node-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.node{background:var(--bg3);border:1px solid var(--border);padding:11px;min-width:0;transition:.2s}.node.selected{border-color:var(--green);box-shadow:0 0 18px rgba(0,240,154,.12)}.node.hold{border-color:rgba(240,48,80,.45)}.node-head{display:flex;justify-content:space-between;gap:5px;align-items:center}.node-name{font:700 13px var(--mono);color:var(--elec)}.badge{font:8px var(--mono);padding:2px 5px;border:1px solid var(--border);color:var(--textdim)}.badge.live{color:var(--green);border-color:rgba(0,240,154,.35)}.score{font:700 31px var(--mono);margin:8px 0 3px}.nmeta{font:9px/1.8 var(--mono);color:var(--textdim)}.bar{height:3px;background:var(--border);margin-top:7px}.fill{height:100%;background:var(--elec)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:var(--bg3);border:1px solid var(--border);padding:10px}.metric .k{font:9px var(--mono);color:var(--textdim)}.metric .v{font:700 26px var(--mono);margin-top:3px}.metric .d{font:9px/1.6 var(--mono);color:var(--textdim);margin-top:3px}
+table{width:100%;border-collapse:collapse;font:9px var(--mono)}th{text-align:left;color:var(--textdim);font-weight:400;border-bottom:1px solid var(--border);padding:5px 3px}td{padding:7px 3px;border-bottom:1px solid rgba(30,22,69,.55)}.live{color:var(--green)}.scenario{color:var(--warn)}.derived{color:var(--elec)}
+.weights{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.weight{background:var(--bg3);border:1px solid var(--border);padding:9px}.weight span{font:8px var(--mono);color:var(--textdim)}.weight strong{font:700 18px var(--mono);display:block;margin-top:2px;color:var(--cyan)}
+.smallnote{font:9px/1.8 var(--mono);color:var(--textdim);margin-top:9px}.hl{color:var(--warn)}.ok{color:var(--green)}.cr{color:var(--crit)}.ac{color:var(--elec)}.cy{color:var(--cyan)}
+footer{border-top:1px solid var(--border);padding-top:11px;margin-top:14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:8px var(--mono);color:var(--textdim)}
+button{font:9px var(--mono);padding:5px 10px;background:var(--bg3);color:var(--textdim);border:1px solid var(--border);cursor:pointer}button:hover{color:var(--elec);border-color:var(--elec)}
+#loading{position:fixed;inset:0;background:var(--bg);z-index:10;display:flex;align-items:center;justify-content:center;font:10px var(--mono);color:var(--elec);letter-spacing:.1em}#loading.hide{display:none}
+@media(max-width:900px){.flow{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}.node-grid{grid-template-columns:1fr 1fr}.weights{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}
+@media(max-width:560px){.node-grid,.three{grid-template-columns:1fr}.action-verb{font-size:45px}.sourcebox .big{font-size:34px}}
+</style>
+</head>
+<body>
+<div id="loading">TOHOKU COMPUTE ROUTER / live weather loading …</div>
+<div class="shell">
+<header>
+  <div><div class="sys">LoPAS / Power × Compute Router v0.2 — Concept PoC</div><div class="name">TOHOKU COMPUTE ROUTER</div></div>
+  <div class="hdr"><span class="dot"></span>LIVE WEATHER &nbsp;|&nbsp; <span class="coord">TOKYO DEMAND → TOHOKU COMPUTE</span><br><span id="ts">—</span><br><span id="weatherLine">4地点の気象取得中…</span> &nbsp; <button onclick="init()">↻ UPDATE</button></div>
+</header>
+<div class="banner">DEMO / NOT PRODUCTION — 気象のみLIVE。GPU容量・系統余力・価格・遅延・再エネ余力は検証用SCENARIO値。目的は「電力 × 計算需要ルーティング」の制御構造を示すこと。</div>
+
+<section class="action" id="actionZone">
+  <div class="clabel">recommended dispatch / 計算需要ルーティング判断</div>
+  <div class="action-verb" id="actionVerb">—</div>
+  <div class="action-sub" id="actionSub">候補ノード評価中…</div>
+  <div class="meta" id="actionMeta"></div>
+  <div class="reason" id="actionReason"></div>
+</section>
+
+<section class="card" style="margin-bottom:12px">
+  <div class="clabel">power-to-compute translation / ワット → ビット</div>
+  <div class="ctitle">Tokyo AI Workload → Distributed Tohoku Nodes</div>
+  <div class="flow">
+    <div class="sourcebox">
+      <div class="clabel">SOURCE / TOKYO DEMAND</div>
+      <div class="big" id="jobMW">6.0 MW</div>
+      <div class="smallnote">BATCH / latency-tolerant<br>期限: 6h以内 <span class="scenario">SCENARIO</span><br>東京気温: <span id="tokyoTemp">—</span></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="node-grid" id="nodeGrid"></div>
+  </div>
+  <div class="smallnote">ROUTER SCORE = Power Headroom × 0.30 + Cooling × 0.20 + GPU Availability × 0.20 + Renewable Surplus × 0.15 + Network × 0.10 + Price × 0.05。ハード制約違反はHOLD。</div>
+</section>
+
+<div class="two">
+  <section class="card">
+    <div class="clabel">decision inputs / ルーティング軸</div><div class="ctitle">Optimization Weights</div>
+    <div class="weights">
+      <div class="weight"><span>POWER</span><strong>30%</strong></div><div class="weight"><span>COOLING</span><strong>20%</strong></div><div class="weight"><span>GPU</span><strong>20%</strong></div><div class="weight"><span>RENEWABLE</span><strong>15%</strong></div><div class="weight"><span>NETWORK+PRICE</span><strong>15%</strong></div>
+    </div>
+    <div class="smallnote">送電だけでなく、<span class="ac">計算需要そのものを電力余力のある地点へ移動</span>する前提。将来は系統混雑・インバランス・PPA・DR・GPU予約・通信帯域をAPI接続する想定。</div>
+  </section>
+  <section class="card">
+    <div class="clabel">lopas · system state</div><div class="ctitle">Router State</div>
+    <div class="three">
+      <div class="metric"><div class="k">SCI / TOKYO PRESSURE</div><div class="v" id="sci">—</div><div class="d">東京側の熱・需要圧</div></div>
+      <div class="metric"><div class="k">RDI / ROUTE DIVERSITY</div><div class="v" id="rdi">—</div><div class="d">利用可能候補の分散度</div></div>
+      <div class="metric"><div class="k">MCI / SIGNAL CONF.</div><div class="v" id="mci">—</div><div class="d">LIVE/SCENARIO比率補正</div></div>
+    </div>
+  </section>
+</div>
+
+<div class="two">
+  <section class="card">
+    <div class="clabel">candidate matrix / 候補比較</div><div class="ctitle">Routing Evidence</div>
+    <table><thead><tr><th>NODE</th><th>WEATHER</th><th>POWER</th><th>GPU</th><th>RTT</th><th>SCORE</th></tr></thead><tbody id="evidenceRows"></tbody></table>
+  </section>
+  <section class="card">
+    <div class="clabel">signal origin / データ境界</div><div class="ctitle">Evidence Boundary</div>
+    <table><thead><tr><th>SOURCE</th><th>TYPE</th><th>STATUS</th></tr></thead><tbody>
+      <tr><td>Open-Meteo</td><td>東京/仙台/秋田/新潟 気温・湿度</td><td class="live">LIVE</td></tr>
+      <tr><td>Grid headroom</td><td>地点別受入余力</td><td class="scenario">SCENARIO</td></tr>
+      <tr><td>GPU inventory</td><td>地点別GPU空き</td><td class="scenario">SCENARIO</td></tr>
+      <tr><td>Network / price</td><td>RTT・電力コスト</td><td class="scenario">SCENARIO</td></tr>
+      <tr><td>LoPAS Router</td><td>正規化・制約判定・配分</td><td class="derived">DERIVED</td></tr>
+    </tbody></table>
+    <div class="smallnote">実装接続先の例: OCCTO/一般送配電事業者の需給・空容量、JEPX/契約単価、DC/GPU scheduler、ネットワークテレメトリ、PPA/非化石価値。</div>
+  </section>
+</div>
+
+<footer><span>LoPAS Power × Compute Router v0.2 — Tohoku Concept PoC</span><span>LIVE: weather only / other operational values are scenario assumptions</span></footer>
+</div>
+<script>
+const $=id=>document.getElementById(id); const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)); const fmt=(n,d=2)=>Number(n).toFixed(d);
+const JOB={mw:6.0,latencyTolerant:true,deadlineHours:6};
+const LOCS={
+  tokyo:{name:'東京',lat:35.68,lon:139.69},
+  sendai:{name:'仙台',lat:38.268,lon:140.869},
+  akita:{name:'秋田',lat:39.720,lon:140.103},
+  niigata:{name:'新潟',lat:37.902,lon:139.023}
+};
+// 検証用の仮定値。実運用では外部API/契約データに置換する。
+const NODES=[
+  {id:'sendai',name:'SENDAI-A',region:'宮城',capacityMW:8.0,gpuAvail:.78,powerHeadroom:.72,renewable:.56,rttMs:18,priceIndex:.72},
+  {id:'akita', name:'AKITA-B', region:'秋田',capacityMW:5.0,gpuAvail:.88,powerHeadroom:.86,renewable:.82,rttMs:25,priceIndex:.79},
+  {id:'niigata',name:'NIIGATA-C',region:'新潟',capacityMW:7.0,gpuAvail:.69,powerHeadroom:.76,renewable:.64,rttMs:20,priceIndex:.75},
+  {id:'tokyo', name:'TOKYO-LOCAL',region:'東京',capacityMW:10.0,gpuAvail:.82,powerHeadroom:.38,renewable:.28,rttMs:3,priceIndex:.42}
+];
+let WEATHER={};
+async function weatherFor(loc){
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m&timezone=Asia%2FTokyo`;
+  const r=await fetch(url); if(!r.ok) throw new Error('weather '+loc.name); const d=await r.json();
+  return {temp:d.current.temperature_2m,humidity:d.current.relative_humidity_2m,wind:d.current.wind_speed_10m};
+}
+function coolingScore(w){
+  // 18°C以下を最良、35°C以上を最低。湿度は小さく補正。
+  return clamp(1-((w.temp-18)/17)*.72-((w.humidity-45)/55)*.18,.10,1);
+}
+function networkScore(ms){return clamp(1-ms/70,.15,1)}
+function priceScore(idx){return clamp(1-idx*.55,.15,1)}
+function evaluate(node){
+  const w=WEATHER[node.id]||{temp:25,humidity:60};
+  const cool=coolingScore(w), net=networkScore(node.rttMs), price=priceScore(node.priceIndex);
+  const hard=[];
+  if(node.capacityMW<JOB.mw) hard.push('容量不足');
+  if(node.gpuAvail<.55) hard.push('GPU不足');
+  if(node.powerHeadroom<.30) hard.push('系統余力不足');
+  const score=node.powerHeadroom*.30+cool*.20+node.gpuAvail*.20+node.renewable*.15+net*.10+price*.05;
+  return {...node,w,cool,net,price,score,hard,eligible:hard.length===0};
+}
+function render(){
+  const ev=NODES.map(evaluate).sort((a,b)=>b.score-a.score); const eligible=ev.filter(x=>x.eligible); const best=eligible[0];
+  const tok=WEATHER.tokyo||{temp:25,humidity:60}; const tokyoPressure=clamp(((tok.temp-20)/18)*.55+((tok.humidity-45)/55)*.15+.30,.15,.95);
+  const routeDiversity=eligible.length/NODES.length; const signalConfidence=.42; // 主要運用値がscenarioのため意図的に低め
+  $('tokyoTemp').textContent=`${tok.temp}°C / ${tok.humidity}%`;
+  $('weatherLine').textContent=`東京 ${tok.temp}°C · 仙台 ${WEATHER.sendai.temp}°C · 秋田 ${WEATHER.akita.temp}°C · 新潟 ${WEATHER.niigata.temp}°C`;
+  $('sci').textContent=fmt(tokyoPressure); $('rdi').textContent=fmt(routeDiversity); $('mci').textContent=fmt(signalConfidence);
+
+  $('nodeGrid').innerHTML=ev.map(n=>`<div class="node ${best&&n.id===best.id?'selected':''} ${!n.eligible?'hold':''}">
+    <div class="node-head"><div class="node-name">${n.name}</div><span class="badge live">TEMP LIVE</span></div>
+    <div class="score" style="color:${n.eligible?'var(--green)':'var(--crit)'}">${fmt(n.score)}</div>
+    <div class="nmeta">${n.region} · ${n.w.temp}°C / ${n.w.humidity}%<br>accept ${n.capacityMW.toFixed(1)}MW · GPU ${Math.round(n.gpuAvail*100)}%<br>power ${Math.round(n.powerHeadroom*100)}% · renewable ${Math.round(n.renewable*100)}%<br>RTT ${n.rttMs}ms · ${n.eligible?'PASS':'HOLD: '+n.hard.join('/')}</div>
+    <div class="bar"><div class="fill" style="width:${Math.round(n.score*100)}%"></div></div></div>`).join('');
+
+  $('evidenceRows').innerHTML=ev.map(n=>`<tr><td class="${best&&n.id===best.id?'live':''}">${n.name}</td><td>${n.w.temp}°C <span class="live">LIVE</span></td><td>${Math.round(n.powerHeadroom*100)}% <span class="scenario">S</span></td><td>${Math.round(n.gpuAvail*100)}% <span class="scenario">S</span></td><td>${n.rttMs}ms <span class="scenario">S</span></td><td>${fmt(n.score)}</td></tr>`).join('');
+
+  let verb='HOLD',sub='全候補がハード制約に抵触。追加容量またはジョブ分割が必要。',cls='hold';
+  if(best){
+    const local=ev.find(x=>x.id==='tokyo');
+    if(best.id==='tokyo'){verb='LOCAL';cls='local';sub='現時点では東京ローカル実行が最適。東北側への移送便益が不足。'}
+    else if(best.score-local.score>.08){verb=`ROUTE → ${best.region.toUpperCase()}`;cls='route';sub=`${best.name}へ${JOB.mw.toFixed(1)}MW相当の計算需要を配分するシナリオ。`}
+    else{verb=`SHIFT → ${best.region.toUpperCase()}`;cls='shift';sub=`差分が小さいため、価格・系統条件成立時のみ${best.name}へシフト。`}
+  }
+  const az=$('actionZone'); az.className='action '+cls; $('actionVerb').textContent=verb; $('actionSub').textContent=sub;
+  $('actionMeta').innerHTML=`<div>JOB<strong>${JOB.mw.toFixed(1)} MW</strong></div><div>ELIGIBLE<strong>${eligible.length}/${NODES.length}</strong></div><div>BEST SCORE<strong>${best?fmt(best.score):'—'}</strong></div><div>CONFIDENCE<strong>${fmt(signalConfidence)}</strong></div><div>MODE<strong>BATCH</strong></div>`;
+  $('actionReason').innerHTML=best?`WHY: <span class="ok">${best.name}</span> は Power ${Math.round(best.powerHeadroom*100)}% / Cooling ${Math.round(best.cool*100)}% / GPU ${Math.round(best.gpuAvail*100)}% / Renewable ${Math.round(best.renewable*100)}% の合成スコアで首位。<br><span class="hl">ただし運用値の大半はSCENARIO。</span> 実データ接続後に同じ判定器を再利用するPoC。`:`WHY: すべての候補が容量・GPU・系統余力のいずれかのハード制約に抵触。`;
+}
+async function init(){
+  $('loading').classList.remove('hide');
+  try{
+    const entries=await Promise.all(Object.entries(LOCS).map(async([id,l])=>[id,await weatherFor(l)])); WEATHER=Object.fromEntries(entries); render();
+  }catch(e){
+    console.error(e); $('weatherLine').textContent='気象取得失敗 / fallback scenario'; WEATHER={tokyo:{temp:31,humidity:68},sendai:{temp:27,humidity:70},akita:{temp:25,humidity:72},niigata:{temp:29,humidity:69}}; render();
+  }finally{$('loading').classList.add('hide')}
+}
+(function clock(){const d=new Date();$('ts').textContent=d.toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',hour12:false})+' JST';setTimeout(clock,1000)})();
+init(); setInterval(init,300000);
+</script>
+</body>
+</html>
