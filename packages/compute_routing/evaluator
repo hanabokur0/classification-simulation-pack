@@ -1,0 +1,262 @@
+id: compute_routing_evaluator
+version: 0.1.0
+package_id: compute_routing
+taxonomy_ref: taxonomy.yaml
+
+required_inputs:
+  - workload_power_mw
+  - workload_gpu_units
+  - workload_latency_limit_ms
+  - workload_interruptible
+  - workload_checkpointable
+  - workload_divisible
+  - data_residency_remote_allowed
+  - routing_authority_confirmed
+  - workload_profile_complete
+  - telemetry_fresh
+  - sendai_power_headroom_mw
+  - sendai_gpu_headroom_units
+  - sendai_rtt_ms
+  - sendai_energy_cost_jpy_kwh
+  - sendai_renewable_share
+  - sendai_thermal_margin
+  - akita_power_headroom_mw
+  - akita_gpu_headroom_units
+  - akita_rtt_ms
+  - akita_energy_cost_jpy_kwh
+  - akita_renewable_share
+  - akita_thermal_margin
+  - niigata_power_headroom_mw
+  - niigata_gpu_headroom_units
+  - niigata_rtt_ms
+  - niigata_energy_cost_jpy_kwh
+  - niigata_renewable_share
+  - niigata_thermal_margin
+  - local_power_headroom_mw
+  - local_gpu_headroom_units
+  - local_energy_cost_jpy_kwh
+  - local_renewable_share
+  - local_thermal_margin
+
+derived_metrics:
+  flexibility_score:
+    expression: (int(workload_interruptible) + int(workload_checkpointable) + int(workload_divisible)) / 3
+
+  sendai_power_fit:
+    expression: min(sendai_power_headroom_mw / max(workload_power_mw, 0.1), 1)
+  sendai_gpu_fit:
+    expression: min(sendai_gpu_headroom_units / max(workload_gpu_units, 1), 1)
+  sendai_latency_ok:
+    expression: if(sendai_rtt_ms <= workload_latency_limit_ms, 1, 0)
+  sendai_latency_fit:
+    expression: if(sendai_rtt_ms <= workload_latency_limit_ms, 1, max(0, 1 - (sendai_rtt_ms - workload_latency_limit_ms) / max(workload_latency_limit_ms, 1)))
+  sendai_cost_fit:
+    expression: max(0, min(1, (45 - sendai_energy_cost_jpy_kwh) / 25))
+  sendai_full_fit:
+    expression: min(sendai_power_fit, sendai_gpu_fit, sendai_latency_ok)
+  sendai_partial_fit:
+    expression: min(sendai_power_fit, sendai_gpu_fit, sendai_latency_ok)
+  sendai_score:
+    expression: 0.30 * sendai_power_fit + 0.25 * sendai_gpu_fit + 0.15 * sendai_latency_fit + 0.10 * sendai_cost_fit + 0.10 * sendai_renewable_share + 0.10 * sendai_thermal_margin
+  sendai_direct_score:
+    expression: if(sendai_full_fit >= 0.999, sendai_score, 0)
+  sendai_shift_score:
+    expression: sendai_score * (0.5 + 0.5 * sendai_partial_fit)
+
+  akita_power_fit:
+    expression: min(akita_power_headroom_mw / max(workload_power_mw, 0.1), 1)
+  akita_gpu_fit:
+    expression: min(akita_gpu_headroom_units / max(workload_gpu_units, 1), 1)
+  akita_latency_ok:
+    expression: if(akita_rtt_ms <= workload_latency_limit_ms, 1, 0)
+  akita_latency_fit:
+    expression: if(akita_rtt_ms <= workload_latency_limit_ms, 1, max(0, 1 - (akita_rtt_ms - workload_latency_limit_ms) / max(workload_latency_limit_ms, 1)))
+  akita_cost_fit:
+    expression: max(0, min(1, (45 - akita_energy_cost_jpy_kwh) / 25))
+  akita_full_fit:
+    expression: min(akita_power_fit, akita_gpu_fit, akita_latency_ok)
+  akita_partial_fit:
+    expression: min(akita_power_fit, akita_gpu_fit, akita_latency_ok)
+  akita_score:
+    expression: 0.30 * akita_power_fit + 0.25 * akita_gpu_fit + 0.15 * akita_latency_fit + 0.10 * akita_cost_fit + 0.10 * akita_renewable_share + 0.10 * akita_thermal_margin
+  akita_direct_score:
+    expression: if(akita_full_fit >= 0.999, akita_score, 0)
+  akita_shift_score:
+    expression: akita_score * (0.5 + 0.5 * akita_partial_fit)
+
+  niigata_power_fit:
+    expression: min(niigata_power_headroom_mw / max(workload_power_mw, 0.1), 1)
+  niigata_gpu_fit:
+    expression: min(niigata_gpu_headroom_units / max(workload_gpu_units, 1), 1)
+  niigata_latency_ok:
+    expression: if(niigata_rtt_ms <= workload_latency_limit_ms, 1, 0)
+  niigata_latency_fit:
+    expression: if(niigata_rtt_ms <= workload_latency_limit_ms, 1, max(0, 1 - (niigata_rtt_ms - workload_latency_limit_ms) / max(workload_latency_limit_ms, 1)))
+  niigata_cost_fit:
+    expression: max(0, min(1, (45 - niigata_energy_cost_jpy_kwh) / 25))
+  niigata_full_fit:
+    expression: min(niigata_power_fit, niigata_gpu_fit, niigata_latency_ok)
+  niigata_partial_fit:
+    expression: min(niigata_power_fit, niigata_gpu_fit, niigata_latency_ok)
+  niigata_score:
+    expression: 0.30 * niigata_power_fit + 0.25 * niigata_gpu_fit + 0.15 * niigata_latency_fit + 0.10 * niigata_cost_fit + 0.10 * niigata_renewable_share + 0.10 * niigata_thermal_margin
+  niigata_direct_score:
+    expression: if(niigata_full_fit >= 0.999, niigata_score, 0)
+  niigata_shift_score:
+    expression: niigata_score * (0.5 + 0.5 * niigata_partial_fit)
+
+  local_power_fit:
+    expression: min(local_power_headroom_mw / max(workload_power_mw, 0.1), 1)
+  local_gpu_fit:
+    expression: min(local_gpu_headroom_units / max(workload_gpu_units, 1), 1)
+  local_cost_fit:
+    expression: max(0, min(1, (45 - local_energy_cost_jpy_kwh) / 25))
+  local_full_fit:
+    expression: min(local_power_fit, local_gpu_fit)
+  local_score:
+    expression: 0.35 * local_power_fit + 0.30 * local_gpu_fit + 0.15 + 0.08 * local_cost_fit + 0.06 * local_renewable_share + 0.06 * local_thermal_margin
+
+  best_direct_score:
+    expression: max(sendai_direct_score, akita_direct_score, niigata_direct_score)
+  best_shift_score:
+    expression: max(sendai_shift_score, akita_shift_score, niigata_shift_score)
+  best_direct_node_code:
+    expression: if(sendai_direct_score >= akita_direct_score and sendai_direct_score >= niigata_direct_score, 1, if(akita_direct_score >= niigata_direct_score, 2, 3))
+  best_shift_node_code:
+    expression: if(sendai_shift_score >= akita_shift_score and sendai_shift_score >= niigata_shift_score, 1, if(akita_shift_score >= niigata_shift_score, 2, 3))
+  direct_remote_advantage:
+    expression: best_direct_score - local_score
+  shift_remote_advantage:
+    expression: best_shift_score - local_score
+  best_shift_partial_fit:
+    expression: if(best_shift_node_code == 1, sendai_partial_fit, if(best_shift_node_code == 2, akita_partial_fit, niigata_partial_fit))
+  remote_candidate_score:
+    expression: max(best_direct_score, best_shift_score)
+  sendai_candidate:
+    expression: if(best_shift_node_code == 1, 1, 0)
+  akita_candidate:
+    expression: if(best_shift_node_code == 2, 1, 0)
+  niigata_candidate:
+    expression: if(best_shift_node_code == 3, 1, 0)
+
+rules:
+  - id: telemetry-stale
+    priority: 1100
+    when:
+      telemetry_fresh:
+        eq: false
+    classify_as: hold
+    hold:
+      code: ROUTING_TELEMETRY_STALE
+
+  - id: routing-authority-missing
+    priority: 1090
+    when:
+      routing_authority_confirmed:
+        eq: false
+    classify_as: hold
+    hold:
+      code: ROUTING_AUTHORITY_MISSING
+
+  - id: workload-profile-incomplete
+    priority: 1080
+    when:
+      workload_profile_complete:
+        eq: false
+    classify_as: hold
+    hold:
+      code: WORKLOAD_PROFILE_INCOMPLETE
+
+  - id: direct-remote-route
+    priority: 900
+    when:
+      all:
+        data_residency_remote_allowed:
+          eq: true
+        best_direct_score:
+          gte: 0.72
+        direct_remote_advantage:
+          gte: 0.03
+    classify_as: route
+
+  - id: flexible-shift-route
+    priority: 800
+    when:
+      all:
+        data_residency_remote_allowed:
+          eq: true
+        flexibility_score:
+          gte: 0.66
+        best_shift_score:
+          gte: 0.58
+        best_shift_partial_fit:
+          gte: 0.40
+        shift_remote_advantage:
+          gte: -0.08
+        best_direct_score:
+          lt: 0.72
+    classify_as: shift
+
+  - id: local-valid-fallback
+    priority: 700
+    when:
+      local_full_fit:
+        gte: 0.999
+    classify_as: local
+
+  - id: no-feasible-capacity
+    priority: 100
+    when:
+      default: true
+    classify_as: hold
+    hold:
+      code: NO_FEASIBLE_CAPACITY
+
+resolution:
+  strategy: first_match
+  order: priority_descending
+
+interpretation:
+  confidence: low
+  confidence_reason:
+    en: This Package classifies synthetic capacity ranges. It is not connected to live utility, GPU-cluster, network, or market telemetry.
+    ja: このPackageは仮定した容量レンジを分類するもので、電力会社・GPUクラスタ・ネットワーク・市場の実テレメトリには未接続です。
+  verdicts:
+    - id: direct-routing-signal
+      priority: 300
+      label:
+        en: Direct remote-routing signal
+        ja: 直接ROUTEの検証価値あり
+      when:
+        direct_route_rate:
+          gte: 0.30
+      message:
+        en: A meaningful share of declared worlds supports direct remote placement; calibrate those boundaries with live telemetry.
+        ja: 宣言条件の相当部分で直接遠隔配置が成立するため、実テレメトリで境界を校正する価値があります。
+    - id: shift-routing-signal
+      priority: 200
+      label:
+        en: Flexible workload-shift signal
+        ja: SHIFT運用の検証価値あり
+      when:
+        remote_candidate_rate:
+          gte: 0.35
+      message:
+        en: Remote use appears more plausible when workloads can move in time or be divided.
+        ja: 時間移動・分割可能なワークロードほど遠隔利用が成立しやすい構造です。
+    - id: measure-before-routing
+      priority: 100
+      label:
+        en: Measure before routing
+        ja: ROUTE前に計測
+      when:
+        default: true
+      message:
+        en: Replace scenario ranges with measured node telemetry before attempting operational routing.
+        ja: 運用ROUTEの前に、シナリオレンジを実測ノードデータへ置き換える必要があります。
+
+on_evaluation_error:
+  status: held
+  classify_as: hold
+  hold:
+    code: EVALUATION_ERROR
