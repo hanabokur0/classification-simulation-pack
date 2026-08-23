@@ -1,0 +1,356 @@
+id: tohoku-compute-routing-synthetic
+version: 0.1.0
+project:
+  name: 東京AI計算需要の東北電力エリア分散ルーティングPoC
+  plain_description: 東京側で発生するAI計算需要を、仙台・秋田・新潟の候補ノードまたは東京LOCALへ振り分ける条件を、仮定レンジで分類する。数値は実測ではなくSCENARIOであり、ROUTE / SHIFT / LOCAL / HOLDの境界を見つけるためのPoCである。
+  target_users:
+    - 電力会社のデータセンター・新規需要開発担当
+    - データセンター運用担当
+    - AI基盤・GPUクラスタ運用担当
+    - 自治体DX・産業誘致担当
+  business_model: power-aware compute routing PoC
+  language: ja
+  current_stage: routable
+question: 東京のAI計算需要を、どの条件なら東北電力エリアの分散計算拠点へ直接ROUTEでき、どの条件ならSHIFT・LOCAL・HOLDにすべきか。
+simulation:
+  runs: 2000
+  seed: 42
+  evidence_level: synthetic_simulation
+
+variables:
+  workload_power_mw:
+    distribution: uniform
+    min: 1.0
+    max: 8.0
+    label: 対象AIワークロードの推定電力需要MW
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  workload_gpu_units:
+    distribution: integer_uniform
+    min: 4
+    max: 32
+    label: 必要GPUユニット数
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  workload_latency_limit_ms:
+    values: [10, 20, 40, 80]
+    weights: [0.10, 0.20, 0.40, 0.30]
+    label: 許容往復遅延ms
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  workload_interruptible:
+    values: [true, false]
+    weights: [0.65, 0.35]
+    label: 中断可能
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  workload_checkpointable:
+    values: [true, false]
+    weights: [0.75, 0.25]
+    label: チェックポイント可能
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  workload_divisible:
+    values: [true, false]
+    weights: [0.60, 0.40]
+    label: 分割可能
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  data_residency_remote_allowed:
+    values: [true, false]
+    weights: [0.90, 0.10]
+    label: データ所在・契約上の遠隔実行許可
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  routing_authority_confirmed:
+    values: [true, false]
+    weights: [0.98, 0.02]
+    label: ルーティング実行権限確認
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  workload_profile_complete:
+    values: [true, false]
+    weights: [0.96, 0.04]
+    label: ワークロード情報の完全性
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  telemetry_fresh:
+    values: [true, false]
+    weights: [0.95, 0.05]
+    label: ノード状態情報の鮮度
+    confidence: low
+    missing_policy: continue_with_warning
+    evidence_refs: []
+
+  sendai_power_headroom_mw:
+    distribution: uniform
+    min: 2.0
+    max: 12.0
+    label: 仙台候補ノード 電力余力MW（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  sendai_gpu_headroom_units:
+    distribution: integer_uniform
+    min: 8
+    max: 48
+    label: 仙台候補ノード GPU余力（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  sendai_rtt_ms:
+    distribution: uniform
+    min: 12
+    max: 28
+    label: 東京-仙台 RTT ms（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  sendai_energy_cost_jpy_kwh:
+    distribution: uniform
+    min: 22
+    max: 34
+    label: 仙台候補ノード 電力コストProxy円/kWh（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  sendai_renewable_share:
+    distribution: uniform
+    min: 0.25
+    max: 0.75
+    label: 仙台候補ノード 再エネ比率Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  sendai_thermal_margin:
+    distribution: uniform
+    min: 0.55
+    max: 0.90
+    label: 仙台候補ノード 冷却余裕Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+
+  akita_power_headroom_mw:
+    distribution: uniform
+    min: 1.0
+    max: 8.0
+    label: 秋田候補ノード 電力余力MW（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  akita_gpu_headroom_units:
+    distribution: integer_uniform
+    min: 4
+    max: 32
+    label: 秋田候補ノード GPU余力（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  akita_rtt_ms:
+    distribution: uniform
+    min: 20
+    max: 38
+    label: 東京-秋田 RTT ms（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  akita_energy_cost_jpy_kwh:
+    distribution: uniform
+    min: 21
+    max: 33
+    label: 秋田候補ノード 電力コストProxy円/kWh（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  akita_renewable_share:
+    distribution: uniform
+    min: 0.35
+    max: 0.85
+    label: 秋田候補ノード 再エネ比率Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  akita_thermal_margin:
+    distribution: uniform
+    min: 0.65
+    max: 0.95
+    label: 秋田候補ノード 冷却余裕Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+
+  niigata_power_headroom_mw:
+    distribution: uniform
+    min: 1.0
+    max: 10.0
+    label: 新潟候補ノード 電力余力MW（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  niigata_gpu_headroom_units:
+    distribution: integer_uniform
+    min: 6
+    max: 40
+    label: 新潟候補ノード GPU余力（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  niigata_rtt_ms:
+    distribution: uniform
+    min: 16
+    max: 34
+    label: 東京-新潟 RTT ms（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  niigata_energy_cost_jpy_kwh:
+    distribution: uniform
+    min: 22
+    max: 35
+    label: 新潟候補ノード 電力コストProxy円/kWh（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  niigata_renewable_share:
+    distribution: uniform
+    min: 0.25
+    max: 0.70
+    label: 新潟候補ノード 再エネ比率Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  niigata_thermal_margin:
+    distribution: uniform
+    min: 0.55
+    max: 0.90
+    label: 新潟候補ノード 冷却余裕Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+
+  local_power_headroom_mw:
+    distribution: uniform
+    min: 0.5
+    max: 6.0
+    label: 東京LOCAL 電力余力MW（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  local_gpu_headroom_units:
+    distribution: integer_uniform
+    min: 4
+    max: 40
+    label: 東京LOCAL GPU余力（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  local_energy_cost_jpy_kwh:
+    distribution: uniform
+    min: 28
+    max: 42
+    label: 東京LOCAL 電力コストProxy円/kWh（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  local_renewable_share:
+    distribution: uniform
+    min: 0.10
+    max: 0.35
+    label: 東京LOCAL 再エネ比率Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+  local_thermal_margin:
+    distribution: uniform
+    min: 0.35
+    max: 0.75
+    label: 東京LOCAL 冷却余裕Proxy（SCENARIO）
+    confidence: insufficient
+    missing_policy: continue_with_warning
+    evidence_refs: []
+
+constants: {}
+context:
+  domain: compute_routing
+  source_region: tokyo
+  destination_service_area: tohoku_epco_area
+  candidate_nodes:
+    1: sendai
+    2: akita
+    3: niigata
+  scenario_notice: All capacity, cost, latency, renewable, and thermal ranges are synthetic placeholders until replaced by measured evidence.
+package:
+  id: compute_routing
+  taxonomy: taxonomy.yaml
+  evaluator: evaluator.yaml
+
+funnel:
+  - id: routable
+    label: ROUTE判断に必要な最低条件が揃う
+    classes: [route, shift, local]
+    next_action: HOLD要因を除外し、実測テレメトリへ接続する。
+  - id: remote_candidate
+    label: 東北電力エリアへの遠隔利用候補になる
+    classes: [route, shift]
+    next_action: GPU・系統余力・RTT・価格・冷却の実測レンジで再シミュレーションする。
+  - id: direct_route
+    label: 追加待機なしで直接ROUTEできる
+    classes: [route]
+    next_action: 小規模・可逆な実ワークロードでルーティングReceiptを取得する。
+
+metrics:
+  - flexibility_score
+  - sendai_score
+  - akita_score
+  - niigata_score
+  - local_score
+  - best_direct_score
+  - best_shift_score
+  - best_direct_node_code
+  - best_shift_node_code
+  - direct_remote_advantage
+  - shift_remote_advantage
+  - sendai_candidate
+  - akita_candidate
+  - niigata_candidate
+
+safety_net:
+  enabled: true
+  min_outcome_ratio: 0.05
+  max_next_packages: 4
+
+evidence_pack:
+  id: tohoku-compute-routing-scenario-assumptions
+  version: 0.1.0
+  items: []
+
+workload:
+  id: compute-routing-monte-carlo
+  version: 0.1.0
+  estimated_runs:
+    min: 200
+    target: 2000
+    max: 20000
+  resource:
+    cpu: preferred
+    gpu: optional
+    memory_gb: 4
+  execution:
+    interruptible: true
+    checkpointable: true
+    resumable: true
+    divisible: true
+  expansion:
+    allowed: true
+    max_depth: 4
+    stop_when_range_reduction_below: 0.01
