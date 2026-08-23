@@ -1,0 +1,79 @@
+# Compute Routing Package v0.1
+
+`packages/compute_routing/` extends Classification Simulation Pack with a scenario-level capacity-routing question:
+
+> Under which declared conditions should an AI workload be ROUTEd to a remote node, SHIFTed in time/partially, kept LOCAL, or placed on HOLD?
+
+## Scope
+
+This is **not** a live capacity router. It is a Package that discovers decision boundaries before a live router is connected.
+
+The bundled example compares synthetic candidate conditions for Sendai, Akita, Niigata, and a Tokyo-local fallback. Those node values are deliberately marked as `SCENARIO` assumptions. Replace them with Evidence Pack observations before operational use.
+
+## State model
+
+- `ROUTE` — a remote node satisfies declared power, GPU, latency, policy, and score thresholds for direct placement.
+- `SHIFT` — direct placement is not strong enough, but flexible workloads can plausibly move in time or be divided.
+- `LOCAL` — local execution is feasible and remote placement is not currently justified or allowed.
+- `HOLD` — telemetry, authority, workload information, or feasible capacity is insufficient.
+
+## Candidate score
+
+Each remote node combines declared proxies for:
+
+- power headroom (30%)
+- GPU headroom (25%)
+- latency fit (15%)
+- energy-cost fit (10%)
+- renewable-share proxy (10%)
+- thermal-margin proxy (10%)
+
+The score is only a routing heuristic inside the declared scenario. Better evidence should narrow the input distributions; it must not silently add points to a node.
+
+## Run
+
+```bash
+python runner/run.py \
+  --package packages/compute_routing \
+  --input examples/tohoku_compute_routing.yaml \
+  --runs 2000 \
+  --seed 42 \
+  --output receipts/tohoku_compute_routing.json \
+  --validate-scenarios
+```
+
+## Replace synthetic ranges with evidence
+
+The first useful production-facing step is not to tune weights. It is to replace broad scenario ranges with measured or reported evidence for:
+
+1. available MW / connection headroom;
+2. available GPU capacity;
+3. RTT / network capacity;
+4. contracted or marginal energy cost;
+5. cooling / thermal margin;
+6. workload interruptibility, checkpointability, divisibility, and latency budget;
+7. data-residency and routing authority.
+
+Use `observed_range`, `mean_std`, or `empirical` calibration exactly as existing Packages do. Missing critical telemetry should remain `HOLD`.
+
+## Relation to Workload Manifest and future Capacity Router
+
+The existing Workload Manifest describes how the **simulation workload** can be transported and executed. The target AI job's routing characteristics are modeled here as scenario variables.
+
+This Package is the boundary-discovery layer immediately before a future live Capacity Router:
+
+```text
+Evidence Pack
+    ↓
+Simulation Package
+    ↓
+Workload Manifest
+    ↓
+compute_routing Package
+    ↓
+ROUTE / SHIFT / LOCAL / HOLD Receipt
+    ↓
+future live Capacity Router
+```
+
+A live connector should consume the resulting boundary rules only after telemetry and authority are verified.
