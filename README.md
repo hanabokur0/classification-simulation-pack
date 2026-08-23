@@ -348,3 +348,39 @@ Classification Simulation Pack is not:
 Its purpose is narrower:
 
 > **Convert an ambiguous workflow into visible assumptions, evidence-calibrated condition ranges, repeatable scenarios, finite operating states, and an auditable Receipt.**
+
+# Addition: `compute_routing` Package
+
+Copy these paths into the repository root:
+
+- `packages/compute_routing/taxonomy.yaml`
+- `packages/compute_routing/evaluator.yaml`
+- `examples/tohoku_compute_routing.yaml`
+- `docs/compute-routing.md`
+- `tests/test_compute_routing.py`
+
+Then run:
+
+```bash
+python runner/run.py \
+  --package packages/compute_routing \
+  --input examples/tohoku_compute_routing.yaml \
+  --runs 2000 \
+  --seed 42 \
+  --output receipts/tohoku_compute_routing.json \
+  --validate-scenarios
+```
+
+And regression test:
+
+```bash
+python -m unittest tests/test_compute_routing.py -v
+```
+
+## README insertion suggestion
+
+Add `compute_routing` under `packages/` and `tohoku_compute_routing.yaml` under `examples/` in the repository tree. In "Current scope", move the Capacity Router line only after a real capacity connector exists; this addition is intentionally a simulation Package, not the live Router itself.
+
+Suggested paragraph:
+
+> `packages/compute_routing` explores the boundary immediately before a live Capacity Router. It classifies declared compute and infrastructure conditions into ROUTE / SHIFT / LOCAL / HOLD while keeping synthetic node ranges distinct from live telemetry. The bundled Tohoku example is a scenario-only PoC; replace its capacity, price, latency, renewable, and thermal ranges with Evidence Pack observations before operational use.
